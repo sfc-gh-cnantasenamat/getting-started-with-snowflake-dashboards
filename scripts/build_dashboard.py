@@ -67,17 +67,25 @@ def scorecard(title, label, decimals=1, increases_better=True, compare=True):
             "deltaColorMode": "increasesBetter" if increases_better else "decreasesBetter",
             "comparisonMode": "manual", "comparisonEnabled": compare,
             "prevColumn": "PRIOR_VALUE", "currentColumn": "CURRENT_VALUE",
-            "displayFormat": "change", "sparklineEnabled": False,
+            "displayFormat": "change", "sparklineEnabled": True, "sparklineColorMode": "fixed",
+            "seriesBucketField": "DS", "seriesBucketFieldType": "temporal", "seriesValueField": "SERIES_VALUE",
             "labelEnabled": True, "labelField": "", "labelText": label}}}}}
 
 
 def kpi_sql(expression):
-    """Current period vs the same months one year earlier, both under identical filters."""
+    """Current period vs the same months one year earlier, both under identical filters, plus a
+    12-month sparkline series ending at the last selected month (other filters still apply)."""
     agg = ("SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP")
-    return (f"WITH cur AS (\n    SELECT {agg} FROM ({base()})\n    {where()}\n),\n"
-            f"py AS (\n    SELECT {agg} FROM ({base(shift_year=True)})\n    {where()}\n)\n"
-            f"SELECT {expression.format(t='cur')} AS CURRENT_VALUE, {expression.format(t='py')} AS PRIOR_VALUE\n"
-            f"FROM cur CROSS JOIN py")
+    return (f"WITH cur_rows AS (\n    SELECT * FROM ({base()})\n    {where()}\n),\n"
+            f"cur AS (SELECT {agg} FROM cur_rows),\n"
+            f"py AS (\n    SELECT {agg} FROM ({base(shift_year=True)})\n    {where()}\n),\n"
+            f"spark AS (\n    SELECT MONTH AS DS, {agg} FROM ({base()})\n"
+            f"    {where(ids=FILTERS[1:], brush=False)}\n"
+            f"    AND MONTH BETWEEN DATEADD(MONTH, -11, (SELECT MAX(MONTH) FROM cur_rows))"
+            f" AND (SELECT MAX(MONTH) FROM cur_rows)\n    GROUP BY MONTH\n)\n"
+            f"SELECT spark.DS, {expression.format(t='spark')} AS SERIES_VALUE,\n"
+            f"    {expression.format(t='cur')} AS CURRENT_VALUE, {expression.format(t='py')} AS PRIOR_VALUE\n"
+            f"FROM spark CROSS JOIN cur CROSS JOIN py\nORDER BY spark.DS")
 
 
 def with_colorbar(spec, field, scale, fmt, title, domain=None, pre=()):
@@ -149,7 +157,7 @@ LAST_PART = "peek(split(datum.label, ' › '))"
 VARIANCE_METRICS = ("SUM(NET_REVENUE) AS NET_REVENUE, SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n"
                     "    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n"
                     "    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT")
-KPI_COLUMNS = [("CURRENT_VALUE", NUM), ("PRIOR_VALUE", NUM)]
+KPI_COLUMNS = [("DS", DATE), ("SERIES_VALUE", NUM), ("CURRENT_VALUE", NUM), ("PRIOR_VALUE", NUM)]
 tiles, datasources, layout = [], {}, {}
 
 
