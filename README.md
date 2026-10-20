@@ -38,6 +38,34 @@ docs/demo-script.md          five-minute walkthrough
 
 Maintainer only (not needed to follow the guide): `scripts/generate_data.py` and `scripts/build_dashboard.py` regenerate `data/` and `dashboards/` from `config/demo.json`, and `tests/test_data.py` tests the generator.
 
+### Local visual checks
+
+After changing the dashboard generator, regenerate the file and run the tests:
+
+```bash
+python3 scripts/build_dashboard.py
+python3 -m unittest discover -s tests -v
+```
+
+Install the optional `vl-convert-python` package to include local chart-rendering checks.
+Set `DASHBOARD_PREVIEW_DIR` to a local output directory to retain driver-chart PNGs.
+The checks cover narrow and wide tiles, light and dark theme simulations, signed
+variances, and empty data. Native scorecard sparklines and dashboard interactions
+still need verification in Snowsight; the local Vega renderer does not exercise them.
+
+The driver donut uses absolute variance for slice area and signed values for its
+in-ring labels. Slice area is not a share of the net shortfall. Its data-relative
+palette also appears on the region and bridge charts; colors show relative variance,
+not fixed alert bands.
+
+`config/chart_specs/` preserves the native editor's driver donut and expanded net
+revenue and variance scorecards, including their animations. The generator loads
+these specs and checks that the scorecard settings match its configuration. Keep
+these files when regenerating so native editor refinements are not lost.
+
+The companion dashboard uses `REVENUE_PULSE_DB.DASHBOARD_DEMO` and omits publishing
+IDs so it can be deployed and published independently in another account.
+
 ## Clean up
 
 Remove every role from the dashboard's **Share** dialog, delete the artifact in CoWork, and delete the Git workspace (**...** next to its name > **Delete**). Then run `sql/99_cleanup.sql`, which drops `REVENUE_PULSE_DB`, the viewer role, and the API integration.

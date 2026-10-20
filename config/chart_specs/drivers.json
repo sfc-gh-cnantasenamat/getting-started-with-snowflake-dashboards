@@ -1,0 +1,110 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "transform": [
+    {
+      "calculate": "abs(datum.VARIANCE)",
+      "as": "ABS_VARIANCE"
+    },
+    {
+      "calculate": "replace(replace(peek(split(datum.DRILL_DRIVER, ' \u203a ')), 'RECORDED_', ''), regexp('_','g'), '\\n') + '\\n' + format(datum.VARIANCE, '$,.2s')",
+      "as": "LABEL"
+    }
+  ],
+  "encoding": {
+    "theta": {
+      "field": "ABS_VARIANCE",
+      "type": "quantitative",
+      "stack": true
+    },
+    "order": {
+      "field": "VARIANCE",
+      "type": "quantitative",
+      "sort": "ascending"
+    }
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "arc",
+        "innerRadius": {
+          "expr": "min(width,height)*0.2"
+        },
+        "outerRadius": {
+          "expr": "min(width,height)*0.48"
+        },
+        "padAngle": 0.01,
+        "cornerRadius": 3
+      },
+      "encoding": {
+        "color": {
+          "field": "VARIANCE",
+          "type": "quantitative",
+          "title": "Variance",
+          "scale": {
+            "range": [
+              "#C8524B",
+              "#DD8459",
+              "#E2C27A",
+              "#5E8AC7",
+              "#3E9F98"
+            ],
+            "interpolate": "rgb"
+          },
+          "legend": null
+        },
+        "tooltip": [
+          {
+            "field": "LEVEL",
+            "title": "Level"
+          },
+          {
+            "field": "DRILL_DRIVER",
+            "title": "Path"
+          },
+          {
+            "field": "VARIANCE",
+            "type": "quantitative",
+            "format": "$,.0f"
+          },
+          {
+            "field": "DISCOUNTS",
+            "type": "quantitative",
+            "format": "$,.0f"
+          },
+          {
+            "field": "REFUNDS",
+            "type": "quantitative",
+            "format": "$,.0f"
+          },
+          {
+            "field": "ACCOUNTS",
+            "type": "quantitative",
+            "title": "Accounts"
+          }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "radius": {
+          "expr": "min(width,height)*0.34"
+        },
+        "fontSize": 9,
+        "fontWeight": "bold",
+        "fill": "#ffffff",
+        "lineBreak": "\n",
+        "lineHeight": 11,
+        "limit": 90
+      },
+      "encoding": {
+        "text": {
+          "field": "LABEL"
+        }
+      }
+    }
+  ],
+  "view": {
+    "stroke": null
+  }
+}

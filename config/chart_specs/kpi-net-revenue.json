@@ -1,0 +1,986 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 400,
+  "height": 200,
+  "padding": 0,
+  "params": [
+    {
+      "name": "__scorecard_reveal",
+      "value": 1
+    },
+    {
+      "name": "__scorecard_pulse",
+      "value": 0
+    }
+  ],
+  "data": {
+    "name": "values"
+  },
+  "transform": [
+    {
+      "calculate": "(isValid(datum['CURRENT_VALUE']) && isNumber(datum['CURRENT_VALUE'])) ? (abs(datum['CURRENT_VALUE']) >= 1e9 ? format(datum['CURRENT_VALUE'] / 1e9, '.1~f') + 'B' : abs(datum['CURRENT_VALUE']) >= 1e6 ? format(datum['CURRENT_VALUE'] / 1e6, '.1~f') + 'M' : abs(datum['CURRENT_VALUE']) >= 1e3 ? format(datum['CURRENT_VALUE'] / 1e3, '.1~f') + 'K' : format(datum['CURRENT_VALUE'], ',.1~f')) : 'N/A'",
+      "as": "bigNumberText"
+    },
+    {
+      "calculate": "datum['PRIOR_VALUE'] == null || datum['PRIOR_VALUE'] == 0 ? null : (datum['CURRENT_VALUE'] - datum['PRIOR_VALUE']) / datum['PRIOR_VALUE'] * 100",
+      "as": "__derivedDelta"
+    },
+    {
+      "calculate": "!((isValid(datum['CURRENT_VALUE']) && isNumber(datum['CURRENT_VALUE']))) ? '' : (((isValid(datum['PRIOR_VALUE']) && isNumber(datum['PRIOR_VALUE']))) ? ((datum['__derivedDelta'] == null ? 'N/A' : format(abs(datum['__derivedDelta']), '.1f') + '%')) : 'N/A')",
+      "as": "deltaText"
+    },
+    {
+      "calculate": "(isValid(datum['CURRENT_VALUE']) && isNumber(datum['CURRENT_VALUE'])) && (isValid(datum['PRIOR_VALUE']) && isNumber(datum['PRIOR_VALUE'])) ? ((datum['CURRENT_VALUE'] - datum['PRIOR_VALUE']) >= 0 ? '#087959' : '#d3132f') : '#5d6a85'",
+      "as": "deltaColor"
+    },
+    {
+      "calculate": "(isValid(datum['CURRENT_VALUE']) && isNumber(datum['CURRENT_VALUE'])) && (isValid(datum['PRIOR_VALUE']) && isNumber(datum['PRIOR_VALUE'])) ? ((datum['CURRENT_VALUE'] - datum['PRIOR_VALUE']) >= 0 ? 'up' : 'down') : ''",
+      "as": "deltaDirection"
+    },
+    {
+      "calculate": "'neutral'",
+      "as": "__toneKey"
+    },
+    {
+      "calculate": "!(isValid(datum['CURRENT_VALUE']) && isNumber(datum['CURRENT_VALUE'])) ? '#5d6a85' : ('#1e252f')",
+      "as": "__numberColor"
+    },
+    {
+      "calculate": "datum['deltaColor'] == '#087959' ? 'success' : (datum['deltaColor'] == '#d3132f' ? 'critical' : 'neutral')",
+      "as": "__chartKey"
+    },
+    {
+      "calculate": "datum['__chartKey'] == 'success' ? '#51d9ae' : (datum['__chartKey'] == 'critical' ? '#ffced0' : ('#3580f2'))",
+      "as": "__lineColor"
+    },
+    {
+      "calculate": "datum['__chartKey'] == 'success' ? '#51d9ae' : (datum['__chartKey'] == 'critical' ? '#ef405e' : ('#3580f2'))",
+      "as": "__chartColor"
+    }
+  ],
+  "layer": [
+    {
+      "transform": [
+        {
+          "filter": "isValid(datum['SERIES_VALUE']) && isFinite(toNumber(datum['SERIES_VALUE']))"
+        },
+        {
+          "calculate": "time(toDate(datum['DS']))",
+          "as": "__sx"
+        },
+        {
+          "joinaggregate": [
+            {
+              "op": "max",
+              "field": "__sx",
+              "as": "__sxmax"
+            }
+          ]
+        },
+        {
+          "calculate": "datum.__sx == datum.__sxmax ? [0, 1] : [0]",
+          "as": "__tail"
+        },
+        {
+          "flatten": [
+            "__tail"
+          ]
+        },
+        {
+          "filter": "datum['__chartKey'] == 'neutral'"
+        }
+      ],
+      "mark": {
+        "type": "area",
+        "opacity": 0.162,
+        "color": {
+          "gradient": "linear",
+          "x1": 0,
+          "y1": 0,
+          "x2": 0,
+          "y2": 1,
+          "stops": [
+            {
+              "offset": 0,
+              "color": "rgba(53, 128, 242, 1)"
+            },
+            {
+              "offset": 0.45,
+              "color": "rgba(53, 128, 242, 0.55)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(53, 128, 242, 0)"
+            }
+          ]
+        },
+        "line": false,
+        "interpolate": "monotone",
+        "tooltip": true,
+        "xOffset": {
+          "expr": "datum.__tail == 1 ? 3 : 0"
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "__sx",
+          "type": "temporal",
+          "axis": null,
+          "scale": {
+            "range": [
+              0,
+              {
+                "expr": "width - 3"
+              }
+            ]
+          }
+        },
+        "y": {
+          "field": "SERIES_VALUE",
+          "type": "quantitative",
+          "axis": null,
+          "stack": null,
+          "scale": {
+            "zero": false,
+            "nice": false,
+            "range": [
+              {
+                "expr": "height * 0.74"
+              },
+              {
+                "expr": "height * 0.14"
+              }
+            ]
+          }
+        },
+        "y2": {
+          "value": {
+            "expr": "height"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "DS",
+            "type": "temporal",
+            "format": "%b %d, %Y"
+          },
+          {
+            "field": "SERIES_VALUE",
+            "type": "quantitative"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "isValid(datum['SERIES_VALUE']) && isFinite(toNumber(datum['SERIES_VALUE']))"
+        },
+        {
+          "calculate": "time(toDate(datum['DS']))",
+          "as": "__sx"
+        },
+        {
+          "joinaggregate": [
+            {
+              "op": "max",
+              "field": "__sx",
+              "as": "__sxmax"
+            }
+          ]
+        },
+        {
+          "calculate": "datum.__sx == datum.__sxmax ? [0, 1] : [0]",
+          "as": "__tail"
+        },
+        {
+          "flatten": [
+            "__tail"
+          ]
+        },
+        {
+          "filter": "datum['__chartKey'] == 'success'"
+        }
+      ],
+      "mark": {
+        "type": "area",
+        "opacity": 0.162,
+        "color": {
+          "gradient": "linear",
+          "x1": 0,
+          "y1": 0,
+          "x2": 0,
+          "y2": 1,
+          "stops": [
+            {
+              "offset": 0,
+              "color": "rgba(81, 217, 174, 1)"
+            },
+            {
+              "offset": 0.45,
+              "color": "rgba(81, 217, 174, 0.55)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(81, 217, 174, 0)"
+            }
+          ]
+        },
+        "line": false,
+        "interpolate": "monotone",
+        "tooltip": true,
+        "xOffset": {
+          "expr": "datum.__tail == 1 ? 3 : 0"
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "__sx",
+          "type": "temporal",
+          "axis": null,
+          "scale": {
+            "range": [
+              0,
+              {
+                "expr": "width - 3"
+              }
+            ]
+          }
+        },
+        "y": {
+          "field": "SERIES_VALUE",
+          "type": "quantitative",
+          "axis": null,
+          "stack": null,
+          "scale": {
+            "zero": false,
+            "nice": false,
+            "range": [
+              {
+                "expr": "height * 0.74"
+              },
+              {
+                "expr": "height * 0.14"
+              }
+            ]
+          }
+        },
+        "y2": {
+          "value": {
+            "expr": "height"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "DS",
+            "type": "temporal",
+            "format": "%b %d, %Y"
+          },
+          {
+            "field": "SERIES_VALUE",
+            "type": "quantitative"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "isValid(datum['SERIES_VALUE']) && isFinite(toNumber(datum['SERIES_VALUE']))"
+        },
+        {
+          "calculate": "time(toDate(datum['DS']))",
+          "as": "__sx"
+        },
+        {
+          "joinaggregate": [
+            {
+              "op": "max",
+              "field": "__sx",
+              "as": "__sxmax"
+            }
+          ]
+        },
+        {
+          "calculate": "datum.__sx == datum.__sxmax ? [0, 1] : [0]",
+          "as": "__tail"
+        },
+        {
+          "flatten": [
+            "__tail"
+          ]
+        },
+        {
+          "filter": "datum['__chartKey'] == 'critical'"
+        }
+      ],
+      "mark": {
+        "type": "area",
+        "opacity": 0.162,
+        "color": {
+          "gradient": "linear",
+          "x1": 0,
+          "y1": 0,
+          "x2": 0,
+          "y2": 1,
+          "stops": [
+            {
+              "offset": 0,
+              "color": "rgba(239, 64, 94, 1)"
+            },
+            {
+              "offset": 0.45,
+              "color": "rgba(239, 64, 94, 0.55)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(239, 64, 94, 0)"
+            }
+          ]
+        },
+        "line": false,
+        "interpolate": "monotone",
+        "tooltip": true,
+        "xOffset": {
+          "expr": "datum.__tail == 1 ? 3 : 0"
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "__sx",
+          "type": "temporal",
+          "axis": null,
+          "scale": {
+            "range": [
+              0,
+              {
+                "expr": "width - 3"
+              }
+            ]
+          }
+        },
+        "y": {
+          "field": "SERIES_VALUE",
+          "type": "quantitative",
+          "axis": null,
+          "stack": null,
+          "scale": {
+            "zero": false,
+            "nice": false,
+            "range": [
+              {
+                "expr": "height * 0.74"
+              },
+              {
+                "expr": "height * 0.14"
+              }
+            ]
+          }
+        },
+        "y2": {
+          "value": {
+            "expr": "height"
+          }
+        },
+        "tooltip": [
+          {
+            "field": "DS",
+            "type": "temporal",
+            "format": "%b %d, %Y"
+          },
+          {
+            "field": "SERIES_VALUE",
+            "type": "quantitative"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "isValid(datum['SERIES_VALUE']) && isFinite(toNumber(datum['SERIES_VALUE']))"
+        },
+        {
+          "calculate": "time(toDate(datum['DS']))",
+          "as": "__sx"
+        },
+        {
+          "joinaggregate": [
+            {
+              "op": "max",
+              "field": "__sx",
+              "as": "__sxmax"
+            }
+          ]
+        },
+        {
+          "calculate": "datum.__sx == datum.__sxmax ? [0, 1] : [0]",
+          "as": "__tail"
+        },
+        {
+          "flatten": [
+            "__tail"
+          ]
+        }
+      ],
+      "mark": {
+        "type": "line",
+        "color": {
+          "expr": "datum['__lineColor']"
+        },
+        "opacity": 0.36,
+        "strokeWidth": 1,
+        "strokeCap": "round",
+        "strokeJoin": "round",
+        "interpolate": "monotone",
+        "xOffset": {
+          "expr": "datum.__tail == 1 ? 3 : 0"
+        },
+        "clip": {
+          "signal": "pathShape('M-2,-2H' + (__scorecard_reveal >= 1 ? width + 2 : __scorecard_reveal * width) + 'V' + (height + 2) + 'H-2Z')"
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "__sx",
+          "type": "temporal",
+          "axis": null,
+          "scale": {
+            "range": [
+              0,
+              {
+                "expr": "width - 3"
+              }
+            ]
+          }
+        },
+        "y": {
+          "field": "SERIES_VALUE",
+          "type": "quantitative",
+          "axis": null,
+          "stack": null,
+          "scale": {
+            "zero": false,
+            "nice": false,
+            "range": [
+              {
+                "expr": "height * 0.74"
+              },
+              {
+                "expr": "height * 0.14"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "isValid(datum['SERIES_VALUE']) && isFinite(toNumber(datum['SERIES_VALUE']))"
+        },
+        {
+          "window": [
+            {
+              "op": "row_number",
+              "as": "__last"
+            }
+          ],
+          "sort": [
+            {
+              "field": "DS",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.__last == 1"
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "filled": false,
+        "color": {
+          "expr": "datum['__lineColor']"
+        },
+        "strokeWidth": 1,
+        "clip": true,
+        "size": {
+          "expr": "__scorecard_pulse <= 0 || __scorecard_pulse >= 1 ? 0 : pow(14 * (1 + 1.6 * (1 - pow(1 - __scorecard_pulse, 2))), 2)"
+        },
+        "strokeOpacity": {
+          "expr": "__scorecard_pulse <= 0 || __scorecard_pulse >= 1 ? 0 : 1 - __scorecard_pulse"
+        }
+      },
+      "encoding": {
+        "x": {
+          "field": "DS",
+          "type": "temporal",
+          "axis": null,
+          "scale": {
+            "range": [
+              0,
+              {
+                "expr": "width - 3"
+              }
+            ]
+          }
+        },
+        "y": {
+          "field": "SERIES_VALUE",
+          "type": "quantitative",
+          "axis": null,
+          "stack": null,
+          "scale": {
+            "zero": false,
+            "nice": false,
+            "range": [
+              {
+                "expr": "height * 0.74"
+              },
+              {
+                "expr": "height * 0.14"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "filter": "isValid(datum['SERIES_VALUE']) && isFinite(toNumber(datum['SERIES_VALUE']))"
+        },
+        {
+          "window": [
+            {
+              "op": "row_number",
+              "as": "__last"
+            }
+          ],
+          "sort": [
+            {
+              "field": "DS",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.__last == 1"
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "opacity": 1,
+        "color": {
+          "expr": "datum['__lineColor']"
+        },
+        "size": 36,
+        "clip": true,
+        "tooltip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "DS",
+          "type": "temporal",
+          "axis": null,
+          "scale": {
+            "range": [
+              0,
+              {
+                "expr": "width - 3"
+              }
+            ]
+          }
+        },
+        "y": {
+          "field": "SERIES_VALUE",
+          "type": "quantitative",
+          "axis": null,
+          "stack": null,
+          "scale": {
+            "zero": false,
+            "nice": false,
+            "range": [
+              {
+                "expr": "height * 0.74"
+              },
+              {
+                "expr": "height * 0.14"
+              }
+            ]
+          }
+        },
+        "tooltip": [
+          {
+            "field": "DS",
+            "type": "temporal",
+            "format": "%b %d, %Y"
+          },
+          {
+            "field": "SERIES_VALUE",
+            "type": "quantitative"
+          }
+        ]
+      }
+    },
+    {
+      "transform": [
+        {
+          "window": [
+            {
+              "op": "row_number",
+              "as": "__row"
+            }
+          ],
+          "sort": [
+            {
+              "field": "DS",
+              "order": "ascending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.__row == 1"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "align": "center",
+        "baseline": "middle",
+        "fontWeight": "bold",
+        "fontSize": {
+          "expr": "width >= 140 ? 40 : (width >= 90 ? 24 : 14)"
+        },
+        "limit": {
+          "expr": "width - 8"
+        },
+        "color": {
+          "expr": "datum['__numberColor']"
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": {
+            "expr": "width / 2"
+          }
+        },
+        "y": {
+          "value": {
+            "expr": "(height + 28) / 2 - 20"
+          }
+        },
+        "text": {
+          "field": "bigNumberText"
+        }
+      }
+    },
+    {
+      "name": "scorecard-trend-icon-up",
+      "transform": [
+        {
+          "window": [
+            {
+              "op": "row_number",
+              "as": "__row"
+            }
+          ],
+          "sort": [
+            {
+              "field": "DS",
+              "order": "ascending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.__row == 1"
+        },
+        {
+          "calculate": "datum['deltaDirection'] == '' ? 0 : 16",
+          "as": "__iw"
+        },
+        {
+          "calculate": "scorecardTextWidth(datum['deltaText'], '600 12px Inter, Roboto, \\'Helvetica Neue\\', Arial, sans-serif')",
+          "as": "__dw"
+        },
+        {
+          "calculate": "0",
+          "as": "__cw"
+        },
+        {
+          "calculate": "max(4, width / 2 - (datum.__iw + datum.__dw + (datum.__cw > 0 ? 6 + datum.__cw : 0)) / 2)",
+          "as": "__ix"
+        },
+        {
+          "calculate": "datum.__ix + datum.__iw",
+          "as": "__dx"
+        },
+        {
+          "filter": "datum['deltaDirection'] == 'up'"
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "shape": "M4.05 9.72a.5.5 0 0 1 .055-.527l3.5-4.5a.5.5 0 0 1 .79 0l3.5 4.5A.5.5 0 0 1 11.5 10h-7a.5.5 0 0 1-.45-.28",
+        "size": 4,
+        "filled": true,
+        "opacity": 1,
+        "strokeWidth": 0,
+        "color": {
+          "expr": "datum['deltaColor']"
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": {
+            "expr": "datum.__ix"
+          }
+        },
+        "y": {
+          "value": {
+            "expr": "(height + 28) / 2 - 20 + 54 - 8"
+          }
+        }
+      }
+    },
+    {
+      "name": "scorecard-trend-icon-down",
+      "transform": [
+        {
+          "window": [
+            {
+              "op": "row_number",
+              "as": "__row"
+            }
+          ],
+          "sort": [
+            {
+              "field": "DS",
+              "order": "ascending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.__row == 1"
+        },
+        {
+          "calculate": "datum['deltaDirection'] == '' ? 0 : 16",
+          "as": "__iw"
+        },
+        {
+          "calculate": "scorecardTextWidth(datum['deltaText'], '600 12px Inter, Roboto, \\'Helvetica Neue\\', Arial, sans-serif')",
+          "as": "__dw"
+        },
+        {
+          "calculate": "0",
+          "as": "__cw"
+        },
+        {
+          "calculate": "max(4, width / 2 - (datum.__iw + datum.__dw + (datum.__cw > 0 ? 6 + datum.__cw : 0)) / 2)",
+          "as": "__ix"
+        },
+        {
+          "calculate": "datum.__ix + datum.__iw",
+          "as": "__dx"
+        },
+        {
+          "filter": "datum['deltaDirection'] == 'down'"
+        }
+      ],
+      "mark": {
+        "type": "point",
+        "shape": "M4.05 5.28a.5.5 0 0 0 .055.527l3.5 4.5a.5.5 0 0 0 .79 0l3.5-4.5A.5.5 0 0 0 11.5 5h-7a.5.5 0 0 0-.45.28",
+        "size": 4,
+        "filled": true,
+        "opacity": 1,
+        "strokeWidth": 0,
+        "color": {
+          "expr": "datum['deltaColor']"
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": {
+            "expr": "datum.__ix"
+          }
+        },
+        "y": {
+          "value": {
+            "expr": "(height + 28) / 2 - 20 + 54 - 8"
+          }
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "window": [
+            {
+              "op": "row_number",
+              "as": "__row"
+            }
+          ],
+          "sort": [
+            {
+              "field": "DS",
+              "order": "ascending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.__row == 1"
+        },
+        {
+          "calculate": "datum['deltaDirection'] == '' ? 0 : 16",
+          "as": "__iw"
+        },
+        {
+          "calculate": "scorecardTextWidth(datum['deltaText'], '600 12px Inter, Roboto, \\'Helvetica Neue\\', Arial, sans-serif')",
+          "as": "__dw"
+        },
+        {
+          "calculate": "0",
+          "as": "__cw"
+        },
+        {
+          "calculate": "max(4, width / 2 - (datum.__iw + datum.__dw + (datum.__cw > 0 ? 6 + datum.__cw : 0)) / 2)",
+          "as": "__ix"
+        },
+        {
+          "calculate": "datum.__ix + datum.__iw",
+          "as": "__dx"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "middle",
+        "fontWeight": 600,
+        "fontSize": 12,
+        "color": {
+          "expr": "datum['deltaColor']"
+        },
+        "limit": {
+          "expr": "max(0, width - 4 - datum.__dx)"
+        },
+        "dx": {
+          "expr": "datum.__dx"
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": 0
+        },
+        "y": {
+          "value": {
+            "expr": "(height + 28) / 2 - 20 + 54"
+          }
+        },
+        "text": {
+          "field": "deltaText"
+        }
+      }
+    },
+    {
+      "transform": [
+        {
+          "window": [
+            {
+              "op": "row_number",
+              "as": "__row"
+            }
+          ],
+          "sort": [
+            {
+              "field": "DS",
+              "order": "ascending"
+            }
+          ]
+        },
+        {
+          "filter": "datum.__row == 1"
+        }
+      ],
+      "mark": {
+        "type": "text",
+        "align": "center",
+        "baseline": "middle",
+        "fontSize": 12,
+        "color": "#5d6a85",
+        "limit": {
+          "expr": "width - 24"
+        }
+      },
+      "encoding": {
+        "x": {
+          "value": {
+            "expr": "width / 2"
+          }
+        },
+        "y": {
+          "value": {
+            "expr": "(height + 28) / 2 - 20 + 34"
+          }
+        },
+        "text": {
+          "value": "USD, vs same period last year"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    },
+    "mark": {
+      "tooltip": false
+    }
+  },
+  "usermeta": {
+    "snowflake": {
+      "chartType": "scorecard",
+      "scorecardConfig": {
+        "currentColumn": "CURRENT_VALUE",
+        "labelField": "",
+        "format": "decimal",
+        "deltaColorMode": "increasesBetter",
+        "comparisonMode": "manual",
+        "decimals": 1,
+        "abbreviate": true,
+        "comparisonEnabled": true,
+        "prevColumn": "PRIOR_VALUE",
+        "displayFormat": "change",
+        "sparklineEnabled": true,
+        "labelEnabled": true,
+        "labelText": "USD, vs same period last year",
+        "sparklineColorMode": "polarity",
+        "seriesBucketField": "DS",
+        "seriesBucketFieldType": "temporal",
+        "seriesValueField": "SERIES_VALUE",
+        "seriesField": "",
+        "deltaField": "",
+        "comparisonSeriesValueField": ""
+      },
+      "intro": [
+        {
+          "signal": "__scorecard_reveal",
+          "from": 0,
+          "to": 1,
+          "rest": 1,
+          "ms": 1500,
+          "ease": "easeOut"
+        },
+        {
+          "signal": "__scorecard_pulse",
+          "from": 0,
+          "to": 1,
+          "rest": 0,
+          "ms": 770,
+          "ease": "linear"
+        }
+      ]
+    }
+  },
+  "title": ""
+}

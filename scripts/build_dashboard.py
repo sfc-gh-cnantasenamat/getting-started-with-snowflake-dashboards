@@ -10,13 +10,13 @@ SV = f'{FQ}.{CONFIG["semantic_view"]}'
 FILTERS = ("MONTH", "REGION", "SEGMENT", "PRODUCT_NAME")
 NUM, TXT, DATE = "NUMBER", "VARCHAR", "DATE"
 
-# Professional blue palette. Amber is the single contrast colour for shortfalls.
-# Colours sampled from the Turbo scheme (dark indigo -> blue -> cyan -> green -> yellow -> orange -> red).
-BLUE, SKY, GREEN, YELLOW, AMBER = "#4686fb", "#1ae4b6", "#a2fc3c", "#faba39", "#f66b19"
+# Muted five-step palette: red -> orange -> yellow -> blue -> teal (worst to best).
+PALETTE = ["#C8524B", "#DD8459", "#E2C27A", "#5E8AC7", "#3E9F98"]
+BLUE, TEAL = "#5B8DEF", "#3E9F98"
 SLATE, INK = "#8a9bb0", "#14365d"
-REGION_SCALE = {"domain": ["Americas", "EMEA", "APAC"], "range": [BLUE, SKY, YELLOW]}
-# Turbo trimmed of its near-black ends (unreadable on the dark theme): red below target, blue above.
-TURBO_VARIANCE = {"scheme": {"name": "turbo", "extent": [0.92, 0.1]}, "domainMid": 0}
+REGION_SCALE = {"domain": ["Americas", "EMEA", "APAC"], "range": [BLUE, "#4FA88A", "#E3C77A"]}
+# Preserve the live dashboard's data-relative variance palette.
+VARIANCE_SCALE = {"range": PALETTE, "interpolate": "rgb"}
 
 
 DRILLS = {"DRILL_REGION": ["REGION", "SEGMENT", "CUSTOMER_NAME"], "DRILL_DRIVER": ["RECORDED_DRIVER", "CUSTOMER_NAME"]}
@@ -55,11 +55,23 @@ def where(ids=FILTERS, brush=True):
 
 
 def datasource(sql, columns, ids=FILTERS, brush=True):
+    bindings = list(ids)
+    if brush:
+        bindings.insert(bindings.index("MONTH") + 1 if "MONTH" in bindings else len(bindings), "BRUSH_MONTH")
     return {"type": "sql", "columns": [{"name": n, "type": t} for n, t in columns], "sql": sql,
-            "filter_bindings": [{"filter_id": i} for i in (*ids, *(["BRUSH_MONTH"] * brush), *DRILLS)]}
+            "filter_bindings": [{"filter_id": i} for i in (*bindings, *DRILLS)]}
 
 
-def scorecard(title, label, decimals=1, increases_better=True, compare=True):
+# Variance sparkline: red below -$1.5M, yellow below target, green at or above it.
+VARIANCE_THRESHOLDS = [{"slot": "alert", "comparator": "lt", "value": -1500000, "color": "red"},
+                       {"slot": "warn", "comparator": "lt", "value": 0, "color": "yellow"},
+                       {"slot": "good", "comparator": "gte", "value": 0, "color": "green"}]
+
+
+def scorecard(title, label, decimals=1, increases_better=True, compare=True, thresholds=None):
+    # Sparklines colour by trend direction (polarity), or by fixed bands when thresholds are given.
+    sparkline = ({"sparklineColorMode": "threshold", "thresholdDirection": "higher-is-better",
+                  "thresholds": thresholds} if thresholds else {"sparklineColorMode": "polarity"})
     return {"title": title, "type": "chart", "spec": {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json", "data": {"name": "values"},
         "usermeta": {"snowflake": {"chartType": "scorecard", "scorecardConfig": {
@@ -67,7 +79,7 @@ def scorecard(title, label, decimals=1, increases_better=True, compare=True):
             "deltaColorMode": "increasesBetter" if increases_better else "decreasesBetter",
             "comparisonMode": "manual", "comparisonEnabled": compare,
             "prevColumn": "PRIOR_VALUE", "currentColumn": "CURRENT_VALUE",
-            "displayFormat": "change", "sparklineEnabled": True, "sparklineColorMode": "fixed",
+            "displayFormat": "change", "sparklineEnabled": True, **sparkline,
             "seriesBucketField": "DS", "seriesBucketFieldType": "temporal", "seriesValueField": "SERIES_VALUE",
             "labelEnabled": True, "labelField": "", "labelText": label}}}}}
 
@@ -174,20 +186,26 @@ add("header", {"type": "text", "text": (
     "# Revenue Pulse\n**Synthetic demo data** for a fictional B2B software company, complete through "
     f"**{CONFIG['reporting_cutoff']}**.\n\n"
     "Net revenue = gross revenue minus discounts and refunds. Attainment = net revenue / target. "
-    "Year-over-year compares the same filtered months one year earlier. Default view: Q3 2026.")}, (0, 0, 12, 2))
+    "Year-over-year compares the same filtered months one year earlier. Default view: Q3 2026.")}, (0, 0, 7, 2))
+
+add("actions", {"title": "Try Chart Actions", "type": "text", "text": (
+    "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n"
+    "- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n"
+    "- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.")}, (7, 0, 5, 2))
 
 add("kpi-net-revenue", scorecard("Net Revenue", "USD, vs same period last year"), (0, 2, 3, 2),
     datasource(kpi_sql("{t}.NET"), KPI_COLUMNS))
 add("kpi-attainment", scorecard("Target Attainment", "% of target, vs last year"), (3, 2, 3, 2),
     datasource(kpi_sql("100 * DIV0NULL({t}.NET, {t}.TGT)"), KPI_COLUMNS))
-add("kpi-variance", scorecard("Variance to Target", "USD, net revenue minus target", decimals=0, compare=False), (6, 2, 3, 2),
+add("kpi-variance", scorecard("Variance to Target", "USD, net revenue minus target", decimals=0, compare=False,
+                                   thresholds=VARIANCE_THRESHOLDS), (6, 2, 3, 2),
     datasource(kpi_sql("{t}.NET - {t}.TGT"), KPI_COLUMNS))
 add("kpi-margin", scorecard("Gross Margin", "% of net revenue, vs last year"), (9, 2, 3, 2),
     datasource(kpi_sql("100 * DIV0NULL({t}.GP, {t}.NET)"), KPI_COLUMNS))
 
 # Trend ignores the date filter on purpose so the selected period is seen in 24-month context.
 trend_ids = FILTERS[1:]
-add("trend", {"title": "Monthly Net Revenue vs Target (drag across months to zoom and filter)", "type": "chart", "spec": {
+add("trend", {"title": "Monthly Net Revenue vs Target (Drag across months to zoom and filter)", "type": "chart", "spec": {
     "transform": [{"fold": ["NET_REVENUE", "REVENUE_TARGET"], "as": ["SERIES", "VALUE"]},
                   {"calculate": "datum.SERIES === 'NET_REVENUE' ? 'Net revenue' : 'Target'", "as": "SERIES_LABEL"}],
     # Non-zero axis makes the gap between net revenue and target visible.
@@ -195,7 +213,7 @@ add("trend", {"title": "Monthly Net Revenue vs Target (drag across months to zoo
                  "y": {"field": "VALUE", "type": "quantitative", "title": "USD", "stack": None,
                        "scale": {"zero": False}, "axis": {"format": "$,.2s"}},
                  "color": {"field": "SERIES_LABEL", "type": "nominal", "title": None,
-                           "scale": {"domain": ["Net revenue", "Target"], "range": [BLUE, AMBER]}},
+                           "scale": {"domain": ["Net revenue", "Target"], "range": [BLUE, TEAL]}},
                  "fillOpacity": {"condition": {"test": "datum.SERIES === 'NET_REVENUE'", "value": 0.3},
                                  "value": 0},
                  "tooltip": [{"field": "MONTH", "type": "temporal", "format": "%b %Y"},
@@ -210,14 +228,14 @@ add("trend", {"title": "Monthly Net Revenue vs Target (drag across months to zoo
                f"FROM ({base()})\n{where(trend_ids)}\nGROUP BY MONTH\nORDER BY MONTH",
                [("MONTH", DATE), ("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM)], trend_ids))
 
-add("by-region", {"title": "Variance to Target by Region (click a region to drill the charts below)",
+add("by-region", {"title": "Variance to Target by Region (Click a Region to drill the charts below)",
                   "type": "chart", "spec": {
     "mark": {"type": "bar", "cornerRadiusEnd": 3},
     "encoding": {"y": {"field": "DRILL_REGION", "type": "nominal", "sort": "x", "title": None,
                        "axis": {"labelExpr": LAST_PART, "labelLimit": 180}},
                  "x": {"field": "VARIANCE", "type": "quantitative", "title": "USD vs target", "axis": {"format": "$,.2s"}},
                  "color": {"field": "VARIANCE", "type": "quantitative", "title": "Variance",
-                           "scale": TURBO_VARIANCE, "legend": None},
+                           "scale": VARIANCE_SCALE, "legend": None},
                  "tooltip": [{"field": "LEVEL", "title": "Level"}, {"field": "DRILL_REGION", "title": "Path"},
                              {"field": "NET_REVENUE", "type": "quantitative", "format": "$,.0f", "title": "Net revenue"},
                              {"field": "REVENUE_TARGET", "type": "quantitative", "format": "$,.0f", "title": "Target"},
@@ -228,10 +246,10 @@ add("by-region", {"title": "Variance to Target by Region (click a region to dril
                [("DRILL_REGION", TXT), ("LEVEL", TXT), ("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM),
                 ("VARIANCE", NUM), ("ATTAINMENT", NUM)]))
 
-# Turbo, reversed and fixed on 55-120%: deep misses dark red, ~90% yellow-green, beating target blue.
-HEATMAP_SCALE = {"scheme": "turbo", "reverse": True, "domain": [0.55, 1.2], "clamp": True}
+# Palette fixed on 55-120% attainment: deep misses red, ~88% yellow, beating target teal.
+HEATMAP_SCALE = {"range": PALETTE, "domain": [0.55, 0.7125, 0.875, 1.0375, 1.2], "clamp": True, "interpolate": "rgb"}
 HEAT_PRE = [{"calculate": "datum.ATTAINMENT", "as": "HEAT"}]
-add("heatmap", {"title": "Target Attainment: Region x Segment", "type": "chart", "spec": {
+add("heatmap", {"title": "Target Attainment (Click a cell to filter by Region and Segment)", "type": "chart", "spec": {
     "transform": HEAT_PRE + [{"joinaggregate": [{"op": "min", "field": "HEAT", "as": "HEAT_LO"},
                                                 {"op": "max", "field": "HEAT", "as": "HEAT_HI"}]}],
     "layer": [
@@ -255,21 +273,8 @@ add("heatmap", {"title": "Target Attainment: Region x Segment", "type": "chart",
                f"FROM ({base()})\n{where()}\nGROUP BY REGION, SEGMENT",
                [("REGION", TXT), ("SEGMENT", TXT), ("ATTAINMENT", NUM), ("VARIANCE", NUM)]))
 
-add("drivers", {"title": "What Sales Ops Recorded: Variance by Driver (follows the region you click)",
-                "type": "chart", "spec": {
-
-    "mark": {"type": "bar", "cornerRadiusEnd": 3},
-    "encoding": {"y": {"field": "DRILL_DRIVER", "type": "nominal", "sort": "x", "title": None,
-                       # One word per line: an array label renders as multiple lines.
-                       "axis": {"labelExpr": f"split(replace({LAST_PART}, 'RECORDED_', ''), '_')",
-                                "labelLimit": 200, "labelLineHeight": 13}},
-                 "x": {"field": "VARIANCE", "type": "quantitative", "title": "USD vs target", "axis": {"format": "$,.2s"}},
-                 "color": {"field": "VARIANCE", "type": "quantitative", "title": "Variance",
-                           "scale": TURBO_VARIANCE, "legend": None},
-                 "tooltip": [{"field": "LEVEL", "title": "Level"}, {"field": "DRILL_DRIVER", "title": "Path"}, {"field": "VARIANCE", "type": "quantitative", "format": "$,.0f"},
-                             {"field": "DISCOUNTS", "type": "quantitative", "format": "$,.0f"},
-                             {"field": "REFUNDS", "type": "quantitative", "format": "$,.0f"},
-                             {"field": "ACCOUNTS", "type": "quantitative", "title": "Accounts"}]}}},
+add("drivers", {"title": "What Sales Ops Recorded: Variance by Driver", "type": "chart",
+                "spec": json.loads((ROOT / "config/chart_specs/drivers.json").read_text())},
     (0, 12, 6, 4),
     datasource(drill_sql("DRILL_DRIVER",
                          "SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n"
@@ -286,7 +291,7 @@ add("waterfall", {"title": "Variance Bridge: How Each Recorded Driver Moves Us v
                            "axis": {"format": "$,.2s"}},
                      "y2": {"field": "END_VALUE"},
                      "color": {"field": "AMOUNT", "type": "quantitative", "title": "Amount",
-                               "scale": TURBO_VARIANCE, "legend": None}}},
+                               "scale": VARIANCE_SCALE, "legend": None}}},
         {"mark": {"type": "rule", "color": SLATE}, "encoding": {"y": {"datum": 0}}},
         # Connector: a dashed level line from each step's end to the next step's start.
         {"transform": [{"filter": "datum.KIND !== 'Total'"}],
@@ -385,9 +390,8 @@ add("accounts", {"title": "Account Detail (sorted by variance)", "type": "table"
                 ("GROSS_MARGIN_PCT", NUM), ("TOP_DRIVER", TXT)]))
 
 COLORBARS = {"heatmap": ("HEAT", HEATMAP_SCALE, ".0%", "Attainment", (0.55, 1.2), HEAT_PRE),
-             "drivers": ("VARIANCE", TURBO_VARIANCE, "$,.2s", "Variance", None),
-             "by-region": ("VARIANCE", TURBO_VARIANCE, "$,.2s", "Variance", None),
-             "waterfall": ("AMOUNT", TURBO_VARIANCE, "$,.2s", "Amount", None)}
+             "by-region": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
+             "waterfall": ("AMOUNT", VARIANCE_SCALE, "$,.2s", "Amount", None)}
 for t in tiles:
     if t["tile_id"] in COLORBARS:
         t["spec"] = with_colorbar(t["spec"], *COLORBARS[t["tile_id"]])
@@ -458,6 +462,16 @@ dash = {
     "layout": {"default": {"meta": {"default": True}, "positions": layout}},
     "datasources": datasources,
 }
+
+# Keep native editor-generated scorecard rendering and animation intact.
+for tile in tiles:
+    if tile["tile_id"] in ("kpi-net-revenue", "kpi-variance"):
+        native = json.loads((ROOT / "config/chart_specs" / f"{tile['tile_id']}.json").read_text())
+        native_config = native["usermeta"]["snowflake"]["scorecardConfig"]
+        expected = tile["spec"]["usermeta"]["snowflake"]["scorecardConfig"]
+        if any(native_config.get(key) != value for key, value in expected.items()):
+            raise ValueError(f"Update the native scorecard spec for {tile['tile_id']} to match its configuration")
+        tile["spec"] = native
 
 if __name__ == "__main__":
     out = ROOT / "dashboards/revenue_pulse.dash"
