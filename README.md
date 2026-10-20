@@ -1,8 +1,10 @@
-# Revenue Pulse: build a revenue dashboard with Snowflake Workspaces and CoWork
+# Revenue Pulse: Getting Started with Snowflake Dashboards 2.0
 
-Companion code for the Snowflake developer guide *Build a Revenue Dashboard with Snowflake Workspaces and CoWork*. You build a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
+Companion code for the Snowflake developer guide *Getting Started with Snowflake Dashboards 2.0*. You use Cortex Code prompts to build, refine, and check a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
 
 Everything runs in Snowsight. You don't need Python, a CLI, or a local clone.
+
+The guide holds the walkthrough: the Cortex Code prompts, the expected output and checks for each step, and the screenshots. This repository holds what those steps run against: the SQL, the synthetic data, and the completed dashboard. The steps below are a quick reference; follow the guide the first time.
 
 ## Run
 
@@ -17,8 +19,10 @@ EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branc
 EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branches/main/sql/04_viewer_role.sql;
 ```
 
-4. In **Workspaces**, select **+ > Git workspace**, paste this repo's URL, choose the `REVENUE_PULSE_GIT_API` integration (the dialog may preselect another one) and **Public repository**, then open `dashboards/revenue_pulse.dash` and set its warehouse to `COMPUTE_WH`.
-5. Choose **Share > Publish as artifact** with the `DASHBOARD_DEMO_SALES_OPS` role. See the guide for the full walkthrough.
+4. In **Workspaces**, select **+ > Git workspace**, paste this repo's URL, and choose the `REVENUE_PULSE_GIT_API` integration (the dialog may preselect another one) and **Public repository**.
+5. Open Cortex Code in the workspace and follow the guide's prompts to build your own `dashboards/revenue_pulse_draft.dash`. Leave `dashboards/revenue_pulse.dash` unchanged; it is the completed example used for the guide's screenshots and expected figures.
+   To view the completed example, open it and select the role and a warehouse (for example `COMPUTE_WH`) in its toolbar before **Run all**.
+6. After validating your draft, choose **Share > Publish as artifact** with the `DASHBOARD_DEMO_SALES_OPS` role. See the guide for the full walkthrough.
 
 If your warehouse isn't `COMPUTE_WH`, replace it in `sql/03_agent.sql` and `sql/04_viewer_role.sql` in your own copy of the files before running them.
 
@@ -32,8 +36,8 @@ sql/03_agent.sql             Revenue Advisor Cortex agent
 sql/04_viewer_role.sql       least-privilege viewer role
 sql/99_cleanup.sql           teardown; never run automatically
 data/                        committed synthetic CSVs and expected_results.json
-dashboards/revenue_pulse.dash  the native Workspaces dashboard
-docs/demo-script.md          five-minute walkthrough
+dashboards/revenue_pulse.dash  completed example dashboard (reference; build your own draft beside it)
+docs/demo-script.md          five-minute presenter walkthrough of the completed dashboard
 ```
 
 Maintainer only (not needed to follow the guide): `scripts/generate_data.py` and `scripts/build_dashboard.py` regenerate `data/` and `dashboards/` from `config/demo.json`, and `tests/test_data.py` tests the generator.
@@ -55,7 +59,7 @@ still need verification in Snowsight; the local Vega renderer does not exercise 
 
 The driver donut uses absolute variance for slice area and signed values for its
 in-ring labels. Slice area is not a share of the net shortfall. Its data-relative
-palette also appears on the region and bridge charts; colors show relative variance,
+palette also appears on the region bars and the variance waterfall; colors show relative variance,
 not fixed alert bands.
 
 `config/chart_specs/` preserves the native editor's driver donut and expanded net
