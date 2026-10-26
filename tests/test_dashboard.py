@@ -58,11 +58,11 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW", serialized)
 
     def test_actions_panel_and_layout(self):
-        self.assertEqual(len(TILES), 15)
+        self.assertEqual(len(TILES), 16)
         self.assertEqual(TILES["actions"]["title"], "Try Chart Actions")
         positions = MODULE.dash["layout"]["default"]["positions"]
-        self.assertEqual(positions["header"], {"x": 0, "y": 0, "w": 7, "h": 2})
-        self.assertEqual(positions["actions"], {"x": 7, "y": 0, "w": 5, "h": 2})
+        self.assertEqual(positions["header"], {"x": 0, "y": 0, "w": 7, "h": 3})
+        self.assertEqual(positions["actions"], {"x": 7, "y": 0, "w": 5, "h": 3})
 
     def test_native_specs_preserved(self):
         for name in ("drivers", "kpi-net-revenue", "kpi-variance"):
@@ -104,6 +104,27 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(TILES["drivers"]["scope"], "detail")
         self.assertEqual(TILES["by-region"]["interactions"][0]["fields"], ["DRILL_REGION"])
         self.assertEqual(TILES["trend"]["interactions"][0]["fields"], ["MONTH"])
+
+    def test_native_hierarchy_drill(self):
+        geo = MODULE.dash["hierarchies"]["geo"]
+        self.assertEqual([level["id"] for level in geo["levels"]], ["region", "segment", "account"])
+        for level in geo["levels"]:
+            self.assertIn(level["key"]["expr"], level["group_by"])
+            self.assertEqual(level["group_by"][-1], level["display"])
+        source = MODULE.dash["datasources"]["ds-geo-drill"]
+        self.assertEqual(source["hierarchy_bindings"], [{"hierarchy_id": "geo"}])
+        self.assertEqual(source["sql"].count("{{ hierarchy_key('geo') }}"), 2)
+        self.assertIn("WHERE\n    {{ hierarchy_rows('geo') }}", source["sql"])
+        self.assertNotIn("SEMANTIC_VIEW(", source["sql"])
+        tile = TILES["geo-drill"]
+        self.assertEqual(tile["scope"], "geo_drill")
+        self.assertEqual(MODULE.dash["scopes"]["geo_drill"], {"parent": "main"})
+        self.assertEqual(tile["spec"]["layer"][0]["encoding"]["y"]["field"], "LEVEL_LABEL")
+        positions = MODULE.dash["layout"]["default"]["positions"]
+        self.assertLess(positions["geo-drill"]["y"], positions["accounts"]["y"])
+        self.assertEqual([(i["trigger"], i["operator"]) for i in tile["interactions"]],
+                         [("select", "drill_down"), ("select_hierarchy_level", "drill_up"),
+                          ("select_hierarchy_level", "set_hierarchy_level")])
 
 
 @unittest.skipUnless(importlib.util.find_spec("vl_convert"), "Optional vl-convert-python is not installed")

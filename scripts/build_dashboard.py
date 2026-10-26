@@ -179,7 +179,13 @@ def add(tile_id, tile, position, ds=None):
         datasources[f"ds-{tile_id}"] = ds
         tile["datasources"] = [f"ds-{tile_id}"]
     tiles.append(tile)
-    layout[tile_id] = dict(zip("xywh", position))
+    x, y, w, h = position
+    # The two intro text tiles are 3 rows tall; everything else starts one row lower.
+    if tile_id in ("header", "actions"):
+        h = 3
+    else:
+        y += 1
+    layout[tile_id] = {"x": x, "y": y, "w": w, "h": h}
 
 
 add("header", {"type": "text", "text": (
@@ -191,7 +197,8 @@ add("header", {"type": "text", "text": (
 add("actions", {"title": "Try Chart Actions", "type": "text", "text": (
     "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n"
     "- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n"
-    "- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.")}, (7, 0, 5, 2))
+    "- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n"
+    "- **Click** a bar in **Hierarchical Filtering** to go from region to segment to account; use its level trail to go back up.")}, (7, 0, 5, 2))
 
 add("kpi-net-revenue", scorecard("Net Revenue", "USD, vs same period last year"), (0, 2, 3, 2),
     datasource(kpi_sql("{t}.NET"), KPI_COLUMNS))
@@ -245,6 +252,57 @@ add("by-region", {"title": "Variance to Target by Region (Click a Region to dril
     datasource(drill_sql("DRILL_REGION", VARIANCE_METRICS),
                [("DRILL_REGION", TXT), ("LEVEL", TXT), ("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM),
                 ("VARIANCE", NUM), ("ATTAINMENT", NUM)]))
+
+# Native hierarchy drill (Region -> Segment -> Account). Hierarchies cannot read a semantic view, so
+# this tile reads the base tables with the view's metric formulas. The row-level base applies the
+# same dashboard filters as every other tile.
+HIERARCHIES = {"geo": {"label": "Geography", "all_member": {"label": "All regions"}, "levels": [
+    {"id": "region", "label": "Region", "key": {"expr": "REGION", "type": "STRING"},
+     "display": "REGION", "group_by": ["REGION"]},
+    # Segment names repeat in every region, so the key carries the region too.
+    {"id": "segment", "label": "Segment", "key": {"expr": "SEGMENT_KEY", "type": "STRING"},
+     "display": "SEGMENT", "group_by": ["SEGMENT_KEY", "SEGMENT"]},
+    {"id": "account", "label": "Account", "key": {"expr": "CUSTOMER_ID", "type": "STRING"},
+     "display": "CUSTOMER_NAME", "group_by": ["CUSTOMER_ID", "CUSTOMER_NAME"]}],
+    "default_values": [{"depth": 0}]}}
+GEO_PATHS = ", ".join(f"{expr} AS {name}" for name, expr in DRILL_PATHS)
+GEO_BASE = (
+    f"SELECT *, REGION || ' › ' || SEGMENT AS SEGMENT_KEY, {GEO_PATHS} FROM (\n"
+    f"        SELECT R.MONTH, R.RECORDED_DRIVER, C.CUSTOMER_ID, C.CUSTOMER_NAME, C.REGION, C.SEGMENT,\n"
+    f"            P.PRODUCT_NAME,\n"
+    f"            (R.GROSS_REVENUE_CENTS - R.DISCOUNT_CENTS - R.REFUND_CENTS) / 100 AS NET_REVENUE,\n"
+    f"            R.TARGET_CENTS / 100 AS REVENUE_TARGET\n"
+    f"        FROM {FQ}.REVENUE_MONTHLY R\n"
+    f"        JOIN {FQ}.CUSTOMERS C ON R.CUSTOMER_ID = C.CUSTOMER_ID\n"
+    f"        JOIN {FQ}.PRODUCTS P ON R.PRODUCT_ID = P.PRODUCT_ID)")
+GEO_DRILL = [
+    {"trigger": "select", "fields": ["LEVEL_KEY"], "operator": "drill_down",
+     "targets": [{"scope": "geo_drill", "fields": ["LEVEL_KEY"], "hierarchy": "geo"}]},
+    {"trigger": "select_hierarchy_level", "operator": "drill_up",
+     "targets": [{"scope": "geo_drill", "hierarchy": "geo"}]},
+    {"trigger": "select_hierarchy_level", "operator": "set_hierarchy_level",
+     "targets": [{"scope": "geo_drill", "hierarchy": "geo"}]}]
+geo_ds = datasource(
+    f"WITH base AS (\n    SELECT * FROM ({GEO_BASE})\n    {where()}\n)\n"
+    "SELECT\n    {{ hierarchy_key('geo') }},\n    " + VARIANCE_METRICS + "\nFROM base\n"
+    "WHERE\n    {{ hierarchy_rows('geo') }}\nGROUP BY\n    {{ hierarchy_key('geo') }}\nORDER BY VARIANCE",
+    [("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT", NUM)])
+geo_ds["hierarchy_bindings"] = [{"hierarchy_id": "geo"}]
+add("geo-drill", {"title": "Hierarchical Filtering: Variance by Region, Segment, and Account (Click a bar to drill in)",
+                  "type": "chart", "spec": {
+    "mark": {"type": "bar", "cornerRadiusEnd": 3},
+    "encoding": {"y": {"field": "LEVEL_LABEL", "type": "nominal", "sort": "x", "title": None,
+                       "axis": {"labelLimit": 180}},
+                 "x": {"field": "VARIANCE", "type": "quantitative", "title": "USD vs target", "stack": None,
+                       "axis": {"format": "$,.2s"}},
+                 "color": {"field": "VARIANCE", "type": "quantitative", "title": "Variance",
+                           "scale": VARIANCE_SCALE, "legend": None},
+                 "tooltip": [{"field": "LEVEL_LABEL", "type": "nominal", "title": "Member"},
+                             {"field": "NET_REVENUE", "type": "quantitative", "format": "$,.0f", "title": "Net revenue"},
+                             {"field": "REVENUE_TARGET", "type": "quantitative", "format": "$,.0f", "title": "Target"},
+                             {"field": "VARIANCE", "type": "quantitative", "format": "$,.0f", "title": "Variance"},
+                             {"field": "ATTAINMENT", "type": "quantitative", "format": ".1%", "title": "Attainment"}]}}},
+    (0, 21, 12, 5), geo_ds)
 
 # Palette fixed on 55-120% attainment: deep misses red, ~88% yellow, beating target teal.
 HEATMAP_SCALE = {"range": PALETTE, "domain": [0.55, 0.7125, 0.875, 1.0375, 1.2], "clamp": True, "interpolate": "rgb"}
@@ -376,7 +434,7 @@ add("accounts", {"title": "Account Detail (sorted by variance)", "type": "table"
     {"field": "REVENUE_TARGET", "label": "Target (USD)"}, {"field": "VARIANCE", "label": "Variance (USD)"},
     {"field": "ATTAINMENT_PCT", "label": "Attainment %"}, {"field": "GROSS_MARGIN_PCT", "label": "Gross margin %"},
     {"field": "TOP_DRIVER", "label": "Recorded driver"}]}},
-    (0, 21, 12, 6),
+    (0, 26, 12, 6),
     datasource(f"SELECT CUSTOMER_NAME, REGION, SEGMENT, ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE,\n"
                f"    ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n"
                f"    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n"
@@ -391,6 +449,7 @@ add("accounts", {"title": "Account Detail (sorted by variance)", "type": "table"
 
 COLORBARS = {"heatmap": ("HEAT", HEATMAP_SCALE, ".0%", "Attainment", (0.55, 1.2), HEAT_PRE),
              "by-region": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
+             "geo-drill": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
              "waterfall": ("AMOUNT", VARIANCE_SCALE, "$,.2s", "Amount", None)}
 for t in tiles:
     if t["tile_id"] in COLORBARS:
@@ -402,11 +461,13 @@ for t in tiles:
 # "detail" (bubble, table, drivers) is a child scope, so driver clicks stay local to it.
 # A filter sent to a scope also reaches its child scopes. The heatmap and the region chart each sit
 # in their own scope so their clicks can filter each other (and everything else) but never themselves.
-SCOPES = {"main": {}, "detail": {"parent": "main"}, "heat": {}, "region": {}}
+# geo_drill holds the hierarchy drill position; as a child of "main" it also receives every filter
+# the other chart actions send there.
+SCOPES = {"main": {}, "detail": {"parent": "main"}, "heat": {}, "region": {}, "geo_drill": {"parent": "main"}}
 TILE_SCOPE = {t: "main" for t in ("kpi-net-revenue", "kpi-attainment", "kpi-variance", "kpi-margin",
                                   "trend", "waterfall")}
 TILE_SCOPE.update({t: "detail" for t in ("drivers", "bubble", "accounts")})
-TILE_SCOPE.update({"heatmap": "heat", "by-region": "region"})
+TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill"})
 
 
 def set_filter(scopes, *fields):
@@ -419,6 +480,7 @@ INTERACTIONS = {
     # Drilldown: a region click narrows every other tile, e.g. drivers show what was recorded in EMEA.
     "by-region": [set_filter(["main", "heat"], "DRILL_REGION")],
     "heatmap": [set_filter(["main", "region"], "REGION", "SEGMENT")],
+    "geo-drill": GEO_DRILL,
     # Drag across the trend to pick a date range (the trend itself ignores the date filter).
     "trend": [{"trigger": "select", "fields": ["MONTH"], "operator": "set_filter",
                "targets": [{"scope": sc, "fields": ["MONTH"], "filter": "BRUSH_MONTH"}
@@ -439,12 +501,13 @@ def options(table, column):
 add("source", {"type": "text", "text": (
     f"Source: Database/Schema: `{FQ}` | Semantic View: `{CONFIG['semantic_view']}` | Tables: `REVENUE_MONTHLY` "
     "(monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`.")},
-    (0, 27, 12, 1))
+    (0, 32, 12, 1))
 
 
 dash = {
     "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse",
     "tabs": [{"order": 0, "tab_id": "default", "title": "Overview", "tiles": tiles}],
+    "hierarchies": HIERARCHIES,
     "filters": {
         "MONTH": {"label": "Period", "mode": "range", "valueType": "DATE",
                   "default_values": ["2026-07-01", "2026-09-01"]},
