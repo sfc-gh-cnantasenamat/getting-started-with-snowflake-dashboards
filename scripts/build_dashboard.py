@@ -345,26 +345,6 @@ add("geo-drill", {"title": "Hierarchical Chart: Variance by Region, Segment, and
                              {"field": "ATTAINMENT", "type": "quantitative", "format": ".1%", "title": "Attainment"}]}}},
     (0, 21, 12, 5), geo_ds)
 
-# Accounts under the current drill member: hierarchy_rows without hierarchy_key keeps the rows of
-# the member the chart drilled into but always groups by account. Same scope, so it follows the drill.
-add("geo-drill-rows", {"title": "Accounts in the Current Drill Selection (sorted by variance)", "type": "table",
-                       "spec": {"columns": [
-    {"field": "CUSTOMER_NAME", "label": "Account"}, {"field": "REGION", "label": "Region"},
-    {"field": "SEGMENT", "label": "Segment"}, {"field": "NET_REVENUE", "label": "Net revenue (USD)"},
-    {"field": "REVENUE_TARGET", "label": "Target (USD)"}, {"field": "VARIANCE", "label": "Variance (USD)"},
-    {"field": "ATTAINMENT_PCT", "label": "Attainment %"}]}},
-    (0, 26, 12, 6), dict(datasource(
-        f"WITH base AS (\n    SELECT * FROM ({GEO_BASE})\n    {where()}\n)\n"
-        "SELECT\n    CUSTOMER_NAME, REGION, SEGMENT,\n"
-        "    ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE, ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n"
-        "    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n"
-        "    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT\n"
-        "FROM base\nWHERE\n    {{ hierarchy_rows('geo') }}\n"
-        "GROUP BY CUSTOMER_ID, CUSTOMER_NAME, REGION, SEGMENT\nORDER BY VARIANCE\nLIMIT 100",
-        [("CUSTOMER_NAME", TXT), ("REGION", TXT), ("SEGMENT", TXT), ("NET_REVENUE", NUM),
-         ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT_PCT", NUM)]),
-        hierarchy_bindings=[{"hierarchy_id": "geo"}]))
-
 # Hierarchy table: showing LEVEL_LABEL makes each row expand to the next level
 # (Region > Segment > Customer Name). It shares the chart's hierarchy and scope, so clicking a bar
 # re-roots the table at that member.
@@ -530,7 +510,7 @@ SCOPES = {"main": {}, "detail": {"parent": "main"}, "heat": {}, "region": {}, "g
 TILE_SCOPE = {t: "main" for t in ("kpi-net-revenue", "kpi-attainment", "kpi-variance", "kpi-margin",
                                   "trend", "waterfall")}
 TILE_SCOPE.update({t: "detail" for t in ("drivers", "bubble")})
-TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill", "geo-drill-rows": "geo_drill", "geo-table": "geo_drill"})
+TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill", "geo-table": "geo_drill"})
 
 
 def set_filter(scopes, *fields):
@@ -575,9 +555,8 @@ add("source", {"type": "text", "text": (
 # Tabs share every filter. The hierarchy chart with its account table, and the full account table,
 # each get their own tab; everything else stays on Overview. Tabs restart their grid at y=0.
 TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("source", "Data Source")]
-TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy", "source": "source"}
-layout.update({"geo-drill": {"x": 0, "y": 0, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 0, "w": 8, "h": 6},
-               "geo-table": {"x": 0, "y": 6, "w": 12, "h": 8},
+TILE_TAB = {"geo-drill": "hierarchy", "geo-table": "hierarchy", "source": "source"}
+layout.update({"geo-drill": {"x": 0, "y": 0, "w": 4, "h": 6}, "geo-table": {"x": 4, "y": 0, "w": 8, "h": 6},
                "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
 
 dash = {

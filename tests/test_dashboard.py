@@ -59,7 +59,7 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW", serialized)
 
     def test_actions_panel_and_layout(self):
-        self.assertEqual(len(TILES), 17)
+        self.assertEqual(len(TILES), 16)
         self.assertEqual([(t["tab_id"], t["title"]) for t in MODULE.dash["tabs"]],
                          [("default", "Overview"), ("hierarchy", "Hierarchical Chart"),
                           ("source", "Data Source")])
@@ -127,17 +127,18 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(tile["scope"], "geo_drill")
         self.assertEqual(MODULE.dash["scopes"]["geo_drill"], {"parent": "main"})
         self.assertEqual(tile["spec"]["layer"][0]["encoding"]["y"]["field"], "LEVEL_LABEL")
-        # The drill chart and its account table share a tab and a scope, table directly below.
+        # The drill chart and its hierarchy table share a tab and a scope, table to the right.
         self.assertEqual(TAB_OF["geo-drill"], "hierarchy")
-        self.assertEqual(TAB_OF["geo-drill-rows"], "hierarchy")
+        self.assertEqual(TAB_OF["geo-table"], "hierarchy")
+        self.assertNotIn("geo-drill-rows", TILES)
         positions = MODULE.dash["layout"]["hierarchy"]["positions"]
         chart = positions["geo-drill"]
-        self.assertEqual((positions["geo-drill-rows"]["x"], positions["geo-drill-rows"]["y"]), (chart["x"] + chart["w"], chart["y"]))
-        self.assertEqual(TILES["geo-drill-rows"]["scope"], "geo_drill")
-        rows = MODULE.dash["datasources"]["ds-geo-drill-rows"]
-        self.assertEqual(rows["hierarchy_bindings"], [{"hierarchy_id": "geo"}])
-        self.assertIn("{{ hierarchy_rows('geo') }}", rows["sql"])
-        self.assertNotIn("hierarchy_key", rows["sql"])
+        self.assertEqual((positions["geo-table"]["x"], positions["geo-table"]["y"]), (chart["x"] + chart["w"], chart["y"]))
+        self.assertEqual(TILES["geo-table"]["scope"], "geo_drill")
+        table = MODULE.dash["datasources"]["ds-geo-table"]
+        self.assertEqual(table["hierarchy_bindings"], [{"hierarchy_id": "geo"}])
+        self.assertIn("{{ hierarchy_key('geo') }}", table["sql"])
+        self.assertEqual(TILES["geo-table"]["spec"]["columns"][0]["field"], "LEVEL_LABEL")
         self.assertEqual([(i["trigger"], i["operator"]) for i in tile["interactions"]],
                          [("select", "drill_down"), ("select_hierarchy_level", "drill_up"),
                           ("select_hierarchy_level", "set_hierarchy_level")])
