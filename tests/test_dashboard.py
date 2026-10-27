@@ -68,8 +68,8 @@ class DashboardTests(unittest.TestCase):
                              {t["tile_id"] for t in tab["tiles"]})
         self.assertTrue(TILES["actions"]["text"].startswith("### Explore the Tabs"))
         positions = MODULE.dash["layout"]["default"]["positions"]
-        self.assertEqual(positions["header"], {"x": 0, "y": 0, "w": 4, "h": 5})
-        self.assertEqual(positions["actions"], {"x": 4, "y": 0, "w": 4, "h": 5})
+        self.assertEqual(positions["header"], {"x": 0, "y": 0, "w": 4, "h": 4})
+        self.assertEqual(positions["actions"], {"x": 4, "y": 0, "w": 4, "h": 4})
 
     def test_native_specs_preserved(self):
         for name in ("drivers", "kpi-net-revenue", "kpi-variance"):
