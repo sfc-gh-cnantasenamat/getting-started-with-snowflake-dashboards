@@ -1,4 +1,4 @@
-"""Build dashboards/revenue_pulse.dash: the compact Revenue Pulse (header only, no how-to tiles)."""
+"""Build dashboards/revenue_pulse.dash: the compact Revenue Pulse (no how-to tiles)."""
 import copy
 import json
 import sys
@@ -7,7 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import build_dashboard as full  # noqa: E402
 
-TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table")]
+TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table"),
+        ("source", "Data Source")]
 LAYOUT = {
     "default": {
         "header": (0, 0, 12, 3),
@@ -20,6 +21,7 @@ LAYOUT = {
     },
     "hierarchy": {"geo-drill": (0, 0, 4, 6), "geo-drill-rows": (4, 0, 8, 6)},
     "hierarchy_table": {"geo-table": (0, 0, 12, 8)},
+    "source": {"source": (0, 0, 6, 4), "ask": (6, 0, 6, 4)},
 }
 
 tiles = {t["tile_id"]: t for tab in full.dash["tabs"] for t in tab["tiles"]}

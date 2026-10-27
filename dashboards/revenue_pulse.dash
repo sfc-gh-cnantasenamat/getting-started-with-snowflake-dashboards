@@ -3415,6 +3415,23 @@
           ]
         }
       ]
+    },
+    {
+      "order": 3,
+      "tab_id": "source",
+      "title": "Data Source",
+      "tiles": [
+        {
+          "tile_id": "source",
+          "type": "text",
+          "text": "## Data Source\n\n**Database/Schema:** `REVENUE_PULSE_DB.DASHBOARD_DEMO`\n\n**Semantic View:** `REVENUE_SEMANTIC_VIEW`\n\n**Tables:**\n\n- `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers)\n- `CUSTOMERS` (region and segment)\n- `PRODUCTS`"
+        },
+        {
+          "tile_id": "ask",
+          "type": "text",
+          "text": "### Ask Revenue Advisor\nOnce published to CoWork, use the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
+        }
+      ]
     }
   ],
   "layout": {
@@ -3516,6 +3533,23 @@
           "y": 0,
           "w": 12,
           "h": 8
+        }
+      }
+    },
+    "source": {
+      "meta": {},
+      "positions": {
+        "source": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "ask": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 4
         }
       }
     }

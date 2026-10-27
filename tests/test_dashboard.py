@@ -191,9 +191,9 @@ class CompactDashboardTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("build_compact", ROOT / "scripts/build_compact.py")
         compact = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(compact)
-        self.assertEqual([t["title"] for t in compact.dash["tabs"]], ["Overview", "Hierarchical Chart", "Hierarchical Table"])
+        self.assertEqual([t["title"] for t in compact.dash["tabs"]], ["Overview", "Hierarchical Chart", "Hierarchical Table", "Data Source"])
         tiles = [t for tab in compact.dash["tabs"] for t in tab["tiles"]]
-        self.assertEqual([t["tile_id"] for t in tiles if t["type"] == "text"], ["header"])
+        self.assertEqual([t["tile_id"] for t in tiles if t["type"] == "text"], ["header", "source", "ask"])
         for tab in compact.dash["tabs"]:
             self.assertEqual(set(compact.dash["layout"][tab["tab_id"]]["positions"]),
                              {t["tile_id"] for t in tab["tiles"]})
