@@ -141,32 +141,43 @@ def with_colorbar(spec, field, scale, fmt, title, domain=None, pre=()):
 def with_bottom_colorbar(spec, field, scale, fmt, title):
     """Same idea as with_colorbar, laid flat along the bottom of the plot for narrow tiles.
 
-    The chart's value axis moves to the top so the strip and its labels own the bottom edge;
-    three ticks with overlap removal keep the labels from colliding in a 1/3-width tile.
+    The range is rounded out to the leading digit (e.g. -779K..159K becomes -800K..200K) and
+    labelled only at its two ends, so the labels can't collide in a 1/3-width tile. The chart's
+    value axis moves to the top so the strip owns the bottom edge.
     """
-    bar = {"transform": [
+    ends = [
         {"aggregate": [{"op": "min", "field": field, "as": "LO"}, {"op": "max", "field": field, "as": "HI"}]},
+        {"calculate": "pow(10, floor(log(max(abs(datum.LO), abs(datum.HI), 1)) / LN10))", "as": "STEP"},
+        {"calculate": "floor(datum.LO / datum.STEP) * datum.STEP", "as": "LO"},
+        {"calculate": "ceil(datum.HI / datum.STEP) * datum.STEP", "as": "HI"}]
+    x_scale = {"zero": False, "nice": False}
+    y_strip = {"domain": [0, 1], "range": [{"expr": "height - 14"}, {"expr": "height - 26"}]}
+    bar = {"transform": ends + [
         {"calculate": "sequence(0, 50)", "as": "I"}, {"flatten": ["I"]},
         {"calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50", "as": "V"},
         {"calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50", "as": "V2"}],
         "mark": {"type": "rect"},
         "encoding": {
-            "x": {"field": "V", "type": "quantitative", "title": title,
-                  "scale": {"zero": False, "nice": False},
-                  "axis": {"orient": "bottom", "format": fmt, "tickCount": 3, "labelOverlap": "greedy",
-                           "labelFlush": True, "grid": False, "domain": False}},
+            "x": {"field": "V", "type": "quantitative", "scale": x_scale,
+                  "axis": {"orient": "bottom", "title": title, "labels": False, "ticks": False,
+                           "grid": False, "domain": False}},
             "x2": {"field": "V2"},
-            "y": {"datum": 0, "axis": None,
-                  "scale": {"domain": [0, 1], "range": [{"expr": "height"}, {"expr": "height - 12"}]}},
+            "y": {"datum": 0, "axis": None, "scale": y_strip},
             "y2": {"datum": 1},
             "color": {"field": "V", "type": "quantitative", "scale": scale, "legend": None}}}
+    labels = {"transform": ends + [{"fold": ["LO", "HI"], "as": ["END", "V"]}],
+              "mark": {"type": "text", "baseline": "top", "fontSize": 11, "dy": 2,
+                       "align": {"expr": "datum.END == 'LO' ? 'left' : 'right'"}},
+              "encoding": {
+                  "x": {"field": "V", "type": "quantitative", "scale": x_scale, "axis": None},
+                  "y": {"datum": 0, "axis": None, "scale": y_strip},
+                  "text": {"field": "V", "type": "quantitative", "format": fmt}}}
     enc = spec["encoding"]
     enc["x"]["axis"] = {**enc["x"].get("axis", {}), "orient": "top"}
-    enc["y"]["scale"] = {**enc["y"].get("scale", {}), "range": [0, {"expr": "height - 30"}]}
-    return {"layer": [spec, bar],
+    enc["y"]["scale"] = {**enc["y"].get("scale", {}), "range": [0, {"expr": "height - 40"}]}
+    return {"layer": [spec, {"layer": [bar, labels]}],
             "resolve": {"scale": {"x": "independent", "y": "independent", "color": "independent"},
                         "axis": {"x": "independent", "y": "independent"}}}
-
 
 def drill_sql(drill, metrics):
     """Drilldown without a native drill feature: once the drill filter is set, show the first level

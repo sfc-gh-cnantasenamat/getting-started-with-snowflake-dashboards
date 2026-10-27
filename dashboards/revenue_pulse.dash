@@ -2898,7 +2898,7 @@
                       "range": [
                         0,
                         {
-                          "expr": "height - 30"
+                          "expr": "height - 40"
                         }
                       ]
                     }
@@ -2963,101 +2963,198 @@
                 }
               },
               {
-                "transform": [
+                "layer": [
                   {
-                    "aggregate": [
+                    "transform": [
                       {
-                        "op": "min",
-                        "field": "VARIANCE",
+                        "aggregate": [
+                          {
+                            "op": "min",
+                            "field": "VARIANCE",
+                            "as": "LO"
+                          },
+                          {
+                            "op": "max",
+                            "field": "VARIANCE",
+                            "as": "HI"
+                          }
+                        ]
+                      },
+                      {
+                        "calculate": "pow(10, floor(log(max(abs(datum.LO), abs(datum.HI), 1)) / LN10))",
+                        "as": "STEP"
+                      },
+                      {
+                        "calculate": "floor(datum.LO / datum.STEP) * datum.STEP",
                         "as": "LO"
                       },
                       {
-                        "op": "max",
-                        "field": "VARIANCE",
+                        "calculate": "ceil(datum.HI / datum.STEP) * datum.STEP",
                         "as": "HI"
+                      },
+                      {
+                        "calculate": "sequence(0, 50)",
+                        "as": "I"
+                      },
+                      {
+                        "flatten": [
+                          "I"
+                        ]
+                      },
+                      {
+                        "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
+                        "as": "V"
+                      },
+                      {
+                        "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
+                        "as": "V2"
                       }
-                    ]
-                  },
-                  {
-                    "calculate": "sequence(0, 50)",
-                    "as": "I"
-                  },
-                  {
-                    "flatten": [
-                      "I"
-                    ]
-                  },
-                  {
-                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
-                    "as": "V"
-                  },
-                  {
-                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
-                    "as": "V2"
-                  }
-                ],
-                "mark": {
-                  "type": "rect"
-                },
-                "encoding": {
-                  "x": {
-                    "field": "V",
-                    "type": "quantitative",
-                    "title": "Variance",
-                    "scale": {
-                      "zero": false,
-                      "nice": false
+                    ],
+                    "mark": {
+                      "type": "rect"
                     },
-                    "axis": {
-                      "orient": "bottom",
-                      "format": "$,.2s",
-                      "tickCount": 3,
-                      "labelOverlap": "greedy",
-                      "labelFlush": true,
-                      "grid": false,
-                      "domain": false
-                    }
-                  },
-                  "x2": {
-                    "field": "V2"
-                  },
-                  "y": {
-                    "datum": 0,
-                    "axis": null,
-                    "scale": {
-                      "domain": [
-                        0,
-                        1
-                      ],
-                      "range": [
-                        {
-                          "expr": "height"
+                    "encoding": {
+                      "x": {
+                        "field": "V",
+                        "type": "quantitative",
+                        "scale": {
+                          "zero": false,
+                          "nice": false
                         },
-                        {
-                          "expr": "height - 12"
+                        "axis": {
+                          "orient": "bottom",
+                          "title": "Variance",
+                          "labels": false,
+                          "ticks": false,
+                          "grid": false,
+                          "domain": false
                         }
-                      ]
+                      },
+                      "x2": {
+                        "field": "V2"
+                      },
+                      "y": {
+                        "datum": 0,
+                        "axis": null,
+                        "scale": {
+                          "domain": [
+                            0,
+                            1
+                          ],
+                          "range": [
+                            {
+                              "expr": "height - 14"
+                            },
+                            {
+                              "expr": "height - 26"
+                            }
+                          ]
+                        }
+                      },
+                      "y2": {
+                        "datum": 1
+                      },
+                      "color": {
+                        "field": "V",
+                        "type": "quantitative",
+                        "scale": {
+                          "range": [
+                            "#C8524B",
+                            "#DD8459",
+                            "#E2C27A",
+                            "#5E8AC7",
+                            "#3E9F98"
+                          ],
+                          "interpolate": "rgb"
+                        },
+                        "legend": null
+                      }
                     }
                   },
-                  "y2": {
-                    "datum": 1
-                  },
-                  "color": {
-                    "field": "V",
-                    "type": "quantitative",
-                    "scale": {
-                      "range": [
-                        "#C8524B",
-                        "#DD8459",
-                        "#E2C27A",
-                        "#5E8AC7",
-                        "#3E9F98"
-                      ],
-                      "interpolate": "rgb"
+                  {
+                    "transform": [
+                      {
+                        "aggregate": [
+                          {
+                            "op": "min",
+                            "field": "VARIANCE",
+                            "as": "LO"
+                          },
+                          {
+                            "op": "max",
+                            "field": "VARIANCE",
+                            "as": "HI"
+                          }
+                        ]
+                      },
+                      {
+                        "calculate": "pow(10, floor(log(max(abs(datum.LO), abs(datum.HI), 1)) / LN10))",
+                        "as": "STEP"
+                      },
+                      {
+                        "calculate": "floor(datum.LO / datum.STEP) * datum.STEP",
+                        "as": "LO"
+                      },
+                      {
+                        "calculate": "ceil(datum.HI / datum.STEP) * datum.STEP",
+                        "as": "HI"
+                      },
+                      {
+                        "fold": [
+                          "LO",
+                          "HI"
+                        ],
+                        "as": [
+                          "END",
+                          "V"
+                        ]
+                      }
+                    ],
+                    "mark": {
+                      "type": "text",
+                      "baseline": "top",
+                      "fontSize": 11,
+                      "dy": 2,
+                      "align": {
+                        "expr": "datum.END == 'LO' ? 'left' : 'right'"
+                      }
                     },
-                    "legend": null
+                    "encoding": {
+                      "x": {
+                        "field": "V",
+                        "type": "quantitative",
+                        "scale": {
+                          "zero": false,
+                          "nice": false
+                        },
+                        "axis": null
+                      },
+                      "y": {
+                        "datum": 0,
+                        "axis": null,
+                        "scale": {
+                          "domain": [
+                            0,
+                            1
+                          ],
+                          "range": [
+                            {
+                              "expr": "height - 14"
+                            },
+                            {
+                              "expr": "height - 26"
+                            }
+                          ]
+                        }
+                      },
+                      "text": {
+                        "field": "V",
+                        "type": "quantitative",
+                        "format": "$,.2s"
+                      }
+                    }
                   }
-                }
+                ]
               }
             ],
             "resolve": {
