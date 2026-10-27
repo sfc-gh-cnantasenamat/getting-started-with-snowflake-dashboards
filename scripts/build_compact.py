@@ -1,4 +1,4 @@
-"""Build dashboards/revenue_pulse.dash: the compact Revenue Pulse: no explanatory text tiles, two tabs."""
+"""Build dashboards/revenue_pulse.dash: the compact Revenue Pulse (header only, no how-to tiles)."""
 import copy
 import json
 import sys
@@ -7,20 +7,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import build_dashboard as full  # noqa: E402
 
-TABS = [("default", "Overview"), ("drill", "Drill Down")]
+TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table")]
 LAYOUT = {
     "default": {
-        "kpi-net-revenue": (0, 0, 3, 2), "kpi-attainment": (3, 0, 3, 2),
-        "kpi-variance": (6, 0, 3, 2), "kpi-margin": (9, 0, 3, 2),
-        "trend": (0, 2, 12, 4),
-        "by-region": (0, 6, 6, 4), "heatmap": (6, 6, 6, 4),
-        "drivers": (0, 10, 6, 4), "waterfall": (6, 10, 6, 4),
-        "bubble": (0, 14, 12, 5),
+        "header": (0, 0, 12, 3),
+        "kpi-net-revenue": (0, 3, 3, 2), "kpi-attainment": (3, 3, 3, 2),
+        "kpi-variance": (6, 3, 3, 2), "kpi-margin": (9, 3, 3, 2),
+        "trend": (0, 5, 12, 4),
+        "by-region": (0, 9, 6, 4), "heatmap": (6, 9, 6, 4),
+        "drivers": (0, 13, 6, 4), "waterfall": (6, 13, 6, 4),
+        "bubble": (0, 17, 12, 5),
     },
-    "drill": {
-        "geo-drill": (0, 0, 4, 6), "geo-drill-rows": (4, 0, 8, 6),
-        "geo-table": (0, 6, 12, 8),
-    },
+    "hierarchy": {"geo-drill": (0, 0, 4, 6), "geo-drill-rows": (4, 0, 8, 6)},
+    "hierarchy_table": {"geo-table": (0, 0, 12, 8)},
 }
 
 tiles = {t["tile_id"]: t for tab in full.dash["tabs"] for t in tab["tiles"]}

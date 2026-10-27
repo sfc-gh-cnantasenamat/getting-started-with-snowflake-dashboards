@@ -143,6 +143,11 @@
       "title": "Overview",
       "tiles": [
         {
+          "tile_id": "header",
+          "type": "text",
+          "text": "# Revenue Pulse\n**Synthetic demo data** for a fictional B2B software company, complete through **2026-09-30**.\n\nNet revenue = gross revenue minus discounts and refunds. Attainment = net revenue / target. Year-over-year compares the same filtered months one year earlier. Default view: Q3 2026."
+        },
+        {
           "tile_id": "kpi-net-revenue",
           "title": "Net Revenue",
           "type": "chart",
@@ -2988,8 +2993,8 @@
     },
     {
       "order": 1,
-      "tab_id": "drill",
-      "title": "Drill Down",
+      "tab_id": "hierarchy",
+      "title": "Hierarchical Chart",
       "tiles": [
         {
           "tile_id": "geo-drill",
@@ -3369,7 +3374,14 @@
             "ds-geo-drill-rows"
           ],
           "scope": "geo_drill"
-        },
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "tab_id": "hierarchy_table",
+      "title": "Hierarchical Table",
+      "tiles": [
         {
           "tile_id": "geo-table",
           "title": "Variance by Region, Segment, and Customer (Expand a row to drill down)",
@@ -3411,69 +3423,75 @@
         "default": true
       },
       "positions": {
-        "kpi-net-revenue": {
+        "header": {
           "x": 0,
           "y": 0,
+          "w": 12,
+          "h": 3
+        },
+        "kpi-net-revenue": {
+          "x": 0,
+          "y": 3,
           "w": 3,
           "h": 2
         },
         "kpi-attainment": {
           "x": 3,
-          "y": 0,
+          "y": 3,
           "w": 3,
           "h": 2
         },
         "kpi-variance": {
           "x": 6,
-          "y": 0,
+          "y": 3,
           "w": 3,
           "h": 2
         },
         "kpi-margin": {
           "x": 9,
-          "y": 0,
+          "y": 3,
           "w": 3,
           "h": 2
         },
         "trend": {
           "x": 0,
-          "y": 2,
+          "y": 5,
           "w": 12,
           "h": 4
         },
         "by-region": {
           "x": 0,
-          "y": 6,
+          "y": 9,
           "w": 6,
           "h": 4
         },
         "heatmap": {
           "x": 6,
-          "y": 6,
+          "y": 9,
           "w": 6,
           "h": 4
         },
         "drivers": {
           "x": 0,
-          "y": 10,
+          "y": 13,
           "w": 6,
           "h": 4
         },
         "waterfall": {
           "x": 6,
-          "y": 10,
+          "y": 13,
           "w": 6,
           "h": 4
         },
         "bubble": {
           "x": 0,
-          "y": 14,
+          "y": 17,
           "w": 12,
           "h": 5
         }
       }
     },
-    "drill": {
+    "hierarchy": {
       "meta": {},
       "positions": {
         "geo-drill": {
@@ -3487,10 +3505,15 @@
           "y": 0,
           "w": 8,
           "h": 6
-        },
+        }
+      }
+    },
+    "hierarchy_table": {
+      "meta": {},
+      "positions": {
         "geo-table": {
           "x": 0,
-          "y": 6,
+          "y": 0,
           "w": 12,
           "h": 8
         }

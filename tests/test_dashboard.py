@@ -187,13 +187,13 @@ if __name__ == "__main__":
     unittest.main()
 
 class CompactDashboardTests(unittest.TestCase):
-    def test_compact_has_two_tabs_and_no_text_tiles(self):
+    def test_compact_tabs_and_text_tiles(self):
         spec = importlib.util.spec_from_file_location("build_compact", ROOT / "scripts/build_compact.py")
         compact = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(compact)
-        self.assertEqual([t["title"] for t in compact.dash["tabs"]], ["Overview", "Drill Down"])
+        self.assertEqual([t["title"] for t in compact.dash["tabs"]], ["Overview", "Hierarchical Chart", "Hierarchical Table"])
         tiles = [t for tab in compact.dash["tabs"] for t in tab["tiles"]]
-        self.assertFalse([t["tile_id"] for t in tiles if t["type"] == "text"])
+        self.assertEqual([t["tile_id"] for t in tiles if t["type"] == "text"], ["header"])
         for tab in compact.dash["tabs"]:
             self.assertEqual(set(compact.dash["layout"][tab["tab_id"]]["positions"]),
                              {t["tile_id"] for t in tab["tiles"]})
