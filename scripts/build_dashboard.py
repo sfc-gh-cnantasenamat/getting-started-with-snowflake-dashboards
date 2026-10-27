@@ -500,12 +500,14 @@ def options(table, column):
 
 # Footer: where every tile's numbers come from.
 add("source", {"type": "text", "text": (
-    "**Source**\n\n"
+    "## Data Source\n\n"
     f"**Database/Schema:** `{FQ}`\n\n"
     f"**Semantic View:** `{CONFIG['semantic_view']}`\n\n"
-    "**Tables:** `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers), "
-    "`CUSTOMERS` (region and segment), and `PRODUCTS`.")},
-    (0, 0, 12, 3))
+    "**Tables:**\n\n"
+    "- `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers)\n"
+    "- `CUSTOMERS` (region and segment)\n"
+    "- `PRODUCTS`")},
+    (0, 0, 12, 4))
 
 
 # Tabs share every filter. The hierarchy chart with its account table, and the full account table,
@@ -513,7 +515,7 @@ add("source", {"type": "text", "text": (
 TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Filtering"), ("source", "Data Source")]
 TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "source": "source"}
 layout.update({"geo-drill": {"x": 0, "y": 0, "w": 12, "h": 5}, "geo-drill-rows": {"x": 0, "y": 5, "w": 12, "h": 6},
-               "source": {"x": 0, "y": 0, "w": 12, "h": 3}})
+               "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
 
 dash = {
     "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse",

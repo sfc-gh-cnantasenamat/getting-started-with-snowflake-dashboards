@@ -3173,7 +3173,7 @@
         {
           "tile_id": "source",
           "type": "text",
-          "text": "**Source**\n\n**Database/Schema:** `REVENUE_PULSE_DB.DASHBOARD_DEMO`\n\n**Semantic View:** `REVENUE_SEMANTIC_VIEW`\n\n**Tables:** `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`."
+          "text": "## Data Source\n\n**Database/Schema:** `REVENUE_PULSE_DB.DASHBOARD_DEMO`\n\n**Semantic View:** `REVENUE_SEMANTIC_VIEW`\n\n**Tables:**\n\n- `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers)\n- `CUSTOMERS` (region and segment)\n- `PRODUCTS`"
         }
       ]
     }
@@ -3421,7 +3421,7 @@
           "x": 0,
           "y": 0,
           "w": 12,
-          "h": 3
+          "h": 4
         }
       }
     }
