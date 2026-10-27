@@ -572,7 +572,7 @@ add("source", {"type": "text", "text": (
     (0, 0, 12, 4))
 
 add("hierarchy-help", {"type": "text", "text": (
-    "## Hierarchical Chart\n\n"
+    "### Hierarchical Chart\n"
     "A hierarchy chart steps through **Region > Segment > Account** in one chart, with each level "
     "aggregated by its own query. The account table beside it lists the accounts under whatever the "
     "chart is showing.\n\n"
@@ -581,7 +581,7 @@ add("hierarchy-help", {"type": "text", "text": (
     "- **The filters** at the top of the dashboard still apply at every level.")},
     (0, 0, 12, 3))
 add("hierarchy-table-help", {"type": "text", "text": (
-    "## Hierarchical Table\n\n"
+    "### Hierarchical Table\n"
     "A hierarchy table shows **Region > Segment > Customer Name** as rows that open in place, so you "
     "can compare levels side by side without leaving the table.\n\n"
     "- **Click the arrow** next to a row to expand it to the next level; click again to collapse it.\n"
@@ -590,7 +590,7 @@ add("hierarchy-table-help", {"type": "text", "text": (
     (0, 0, 12, 3))
 
 add("chart-actions-help", {"type": "text", "text": (
-    "## Chart Actions\n\n"
+    "### Chart Actions\n"
     "Chart actions make the charts interactive: drag or click on a source chart and the other tiles "
     "re-run their queries for your selection. Each source chart below has its instructions on the left. "
     "Click empty space in a chart, or the **x** on its gray banner, to clear the selection.")},
@@ -629,20 +629,20 @@ TILE_TAB = {**{t: "chart_actions" for t in ("chart-actions-help", "help-trend", 
                                            "drivers", "waterfall", "bubble")},
             "geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy_table", "hierarchy-help": "hierarchy",
             "hierarchy-table-help": "hierarchy_table", "source": "source"}
-layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 3},
-               "help-trend": {"x": 0, "y": 3, "w": 4, "h": 4}, "trend": {"x": 4, "y": 3, "w": 8, "h": 4},
-               "help-region": {"x": 0, "y": 7, "w": 4, "h": 4}, "by-region": {"x": 4, "y": 7, "w": 8, "h": 4},
-               "help-heatmap": {"x": 0, "y": 11, "w": 4, "h": 4}, "heatmap": {"x": 4, "y": 11, "w": 8, "h": 4},
-               "help-targets": {"x": 0, "y": 15, "w": 4, "h": 13}, "drivers": {"x": 4, "y": 15, "w": 8, "h": 4},
-               "waterfall": {"x": 4, "y": 19, "w": 8, "h": 4}, "bubble": {"x": 4, "y": 23, "w": 8, "h": 5},
+layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 2},
+               "help-trend": {"x": 0, "y": 2, "w": 4, "h": 4}, "trend": {"x": 4, "y": 2, "w": 8, "h": 4},
+               "help-region": {"x": 0, "y": 6, "w": 4, "h": 4}, "by-region": {"x": 4, "y": 6, "w": 8, "h": 4},
+               "help-heatmap": {"x": 0, "y": 10, "w": 4, "h": 4}, "heatmap": {"x": 4, "y": 10, "w": 8, "h": 4},
+               "help-targets": {"x": 0, "y": 14, "w": 4, "h": 13}, "drivers": {"x": 4, "y": 14, "w": 8, "h": 4},
+               "waterfall": {"x": 4, "y": 18, "w": 8, "h": 4}, "bubble": {"x": 4, "y": 22, "w": 8, "h": 5},
                "header": {"x": 0, "y": 0, "w": 4, "h": 4}, "actions": {"x": 4, "y": 0, "w": 4, "h": 4},
                "ask": {"x": 8, "y": 0, "w": 4, "h": 4},
                **{k: {"x": x, "y": 4, "w": 3, "h": 2} for k, x in (("kpi-net-revenue", 0), ("kpi-attainment", 3),
                                                                   ("kpi-variance", 6), ("kpi-margin", 9))},
-               "hierarchy-help": {"x": 0, "y": 0, "w": 12, "h": 3},
-               "geo-drill": {"x": 0, "y": 3, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 3, "w": 8, "h": 6},
-               "hierarchy-table-help": {"x": 0, "y": 0, "w": 12, "h": 3},
-               "geo-table": {"x": 0, "y": 3, "w": 12, "h": 8},
+               "hierarchy-help": {"x": 0, "y": 0, "w": 12, "h": 2},
+               "geo-drill": {"x": 0, "y": 2, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 2, "w": 8, "h": 6},
+               "hierarchy-table-help": {"x": 0, "y": 0, "w": 12, "h": 2},
+               "geo-table": {"x": 0, "y": 2, "w": 12, "h": 8},
                "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
 
 dash = {

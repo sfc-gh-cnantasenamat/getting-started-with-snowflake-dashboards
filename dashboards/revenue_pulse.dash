@@ -2876,7 +2876,7 @@
         {
           "tile_id": "chart-actions-help",
           "type": "text",
-          "text": "## Chart Actions\n\nChart actions make the charts interactive: drag or click on a source chart and the other tiles re-run their queries for your selection. Each source chart below has its instructions on the left. Click empty space in a chart, or the **x** on its gray banner, to clear the selection."
+          "text": "### Chart Actions\nChart actions make the charts interactive: drag or click on a source chart and the other tiles re-run their queries for your selection. Each source chart below has its instructions on the left. Click empty space in a chart, or the **x** on its gray banner, to clear the selection."
         },
         {
           "tile_id": "help-trend",
@@ -3287,7 +3287,7 @@
         {
           "tile_id": "hierarchy-help",
           "type": "text",
-          "text": "## Hierarchical Chart\n\nA hierarchy chart steps through **Region > Segment > Account** in one chart, with each level aggregated by its own query. The account table beside it lists the accounts under whatever the chart is showing.\n\n- **Click a bar** to drill into that member (a region opens its segments, a segment its accounts).\n- **Use the level trail** above the chart (Region, Segment, Account) to go back up or jump to a level.\n- **The filters** at the top of the dashboard still apply at every level."
+          "text": "### Hierarchical Chart\nA hierarchy chart steps through **Region > Segment > Account** in one chart, with each level aggregated by its own query. The account table beside it lists the accounts under whatever the chart is showing.\n\n- **Click a bar** to drill into that member (a region opens its segments, a segment its accounts).\n- **Use the level trail** above the chart (Region, Segment, Account) to go back up or jump to a level.\n- **The filters** at the top of the dashboard still apply at every level."
         }
       ]
     },
@@ -3331,7 +3331,7 @@
         {
           "tile_id": "hierarchy-table-help",
           "type": "text",
-          "text": "## Hierarchical Table\n\nA hierarchy table shows **Region > Segment > Customer Name** as rows that open in place, so you can compare levels side by side without leaving the table.\n\n- **Click the arrow** next to a row to expand it to the next level; click again to collapse it.\n- **Expand several rows** at once to compare segments or customers across regions.\n- **The filters** at the top of the dashboard still apply to every row."
+          "text": "### Hierarchical Table\nA hierarchy table shows **Region > Segment > Customer Name** as rows that open in place, so you can compare levels side by side without leaving the table.\n\n- **Click the arrow** next to a row to expand it to the next level; click again to collapse it.\n- **Expand several rows** at once to compare segments or customers across regions.\n- **The filters** at the top of the dashboard still apply to every row."
         }
       ]
     },
@@ -3536,37 +3536,37 @@
       "positions": {
         "trend": {
           "x": 4,
-          "y": 3,
+          "y": 2,
           "w": 8,
           "h": 4
         },
         "by-region": {
           "x": 4,
-          "y": 7,
+          "y": 6,
           "w": 8,
           "h": 4
         },
         "heatmap": {
           "x": 4,
-          "y": 11,
+          "y": 10,
           "w": 8,
           "h": 4
         },
         "drivers": {
           "x": 4,
-          "y": 15,
+          "y": 14,
           "w": 8,
           "h": 4
         },
         "waterfall": {
           "x": 4,
-          "y": 19,
+          "y": 18,
           "w": 8,
           "h": 4
         },
         "bubble": {
           "x": 4,
-          "y": 23,
+          "y": 22,
           "w": 8,
           "h": 5
         },
@@ -3574,29 +3574,29 @@
           "x": 0,
           "y": 0,
           "w": 12,
-          "h": 3
+          "h": 2
         },
         "help-trend": {
           "x": 0,
-          "y": 3,
+          "y": 2,
           "w": 4,
           "h": 4
         },
         "help-region": {
           "x": 0,
-          "y": 7,
+          "y": 6,
           "w": 4,
           "h": 4
         },
         "help-heatmap": {
           "x": 0,
-          "y": 11,
+          "y": 10,
           "w": 4,
           "h": 4
         },
         "help-targets": {
           "x": 0,
-          "y": 15,
+          "y": 14,
           "w": 4,
           "h": 13
         }
@@ -3607,13 +3607,13 @@
       "positions": {
         "geo-drill": {
           "x": 0,
-          "y": 3,
+          "y": 2,
           "w": 4,
           "h": 6
         },
         "geo-drill-rows": {
           "x": 4,
-          "y": 3,
+          "y": 2,
           "w": 8,
           "h": 6
         },
@@ -3621,7 +3621,7 @@
           "x": 0,
           "y": 0,
           "w": 12,
-          "h": 3
+          "h": 2
         }
       }
     },
@@ -3630,7 +3630,7 @@
       "positions": {
         "geo-table": {
           "x": 0,
-          "y": 3,
+          "y": 2,
           "w": 12,
           "h": 8
         },
@@ -3638,7 +3638,7 @@
           "x": 0,
           "y": 0,
           "w": 12,
-          "h": 3
+          "h": 2
         }
       }
     },
