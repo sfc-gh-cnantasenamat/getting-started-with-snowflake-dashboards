@@ -2866,11 +2866,6 @@
           "tile_id": "ask",
           "type": "text",
           "text": "### Ask Revenue Advisor\nOnce published to CoWork, use the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
-        },
-        {
-          "tile_id": "source",
-          "type": "text",
-          "text": "Source: Database/Schema: `REVENUE_PULSE_DB.DASHBOARD_DEMO` | Semantic View: `REVENUE_SEMANTIC_VIEW` | Tables: `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`."
         }
       ]
     },
@@ -3172,57 +3167,13 @@
     },
     {
       "order": 2,
-      "tab_id": "accounts",
-      "title": "Account Detail",
+      "tab_id": "source",
+      "title": "Data Source",
       "tiles": [
         {
-          "tile_id": "accounts",
-          "title": "Account Detail (sorted by variance)",
-          "type": "table",
-          "spec": {
-            "columns": [
-              {
-                "field": "CUSTOMER_NAME",
-                "label": "Account"
-              },
-              {
-                "field": "REGION",
-                "label": "Region"
-              },
-              {
-                "field": "SEGMENT",
-                "label": "Segment"
-              },
-              {
-                "field": "NET_REVENUE",
-                "label": "Net revenue (USD)"
-              },
-              {
-                "field": "REVENUE_TARGET",
-                "label": "Target (USD)"
-              },
-              {
-                "field": "VARIANCE",
-                "label": "Variance (USD)"
-              },
-              {
-                "field": "ATTAINMENT_PCT",
-                "label": "Attainment %"
-              },
-              {
-                "field": "GROSS_MARGIN_PCT",
-                "label": "Gross margin %"
-              },
-              {
-                "field": "TOP_DRIVER",
-                "label": "Recorded driver"
-              }
-            ]
-          },
-          "datasources": [
-            "ds-accounts"
-          ],
-          "scope": "detail"
+          "tile_id": "source",
+          "type": "text",
+          "text": "**Source**\n\n**Database/Schema:** `REVENUE_PULSE_DB.DASHBOARD_DEMO`\n\n**Semantic View:** `REVENUE_SEMANTIC_VIEW`\n\n**Tables:** `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`."
         }
       ]
     }
@@ -3443,12 +3394,6 @@
           "y": 17,
           "w": 4,
           "h": 5
-        },
-        "source": {
-          "x": 0,
-          "y": 22,
-          "w": 12,
-          "h": 1
         }
       }
     },
@@ -3469,14 +3414,14 @@
         }
       }
     },
-    "accounts": {
+    "source": {
       "meta": {},
       "positions": {
-        "accounts": {
+        "source": {
           "x": 0,
           "y": 0,
           "w": 12,
-          "h": 9
+          "h": 3
         }
       }
     }
@@ -4053,71 +3998,6 @@
         }
       ],
       "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, SUM(NET_REVENUE) AS NET_REVENUE,\n    SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\nFROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\nWHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT",
-      "filter_bindings": [
-        {
-          "filter_id": "MONTH"
-        },
-        {
-          "filter_id": "BRUSH_MONTH"
-        },
-        {
-          "filter_id": "REGION"
-        },
-        {
-          "filter_id": "SEGMENT"
-        },
-        {
-          "filter_id": "PRODUCT_NAME"
-        },
-        {
-          "filter_id": "DRILL_REGION"
-        },
-        {
-          "filter_id": "DRILL_DRIVER"
-        }
-      ]
-    },
-    "ds-accounts": {
-      "type": "sql",
-      "columns": [
-        {
-          "name": "CUSTOMER_NAME",
-          "type": "VARCHAR"
-        },
-        {
-          "name": "REGION",
-          "type": "VARCHAR"
-        },
-        {
-          "name": "SEGMENT",
-          "type": "VARCHAR"
-        },
-        {
-          "name": "NET_REVENUE",
-          "type": "NUMBER"
-        },
-        {
-          "name": "REVENUE_TARGET",
-          "type": "NUMBER"
-        },
-        {
-          "name": "VARIANCE",
-          "type": "NUMBER"
-        },
-        {
-          "name": "ATTAINMENT_PCT",
-          "type": "NUMBER"
-        },
-        {
-          "name": "GROSS_MARGIN_PCT",
-          "type": "NUMBER"
-        },
-        {
-          "name": "TOP_DRIVER",
-          "type": "VARCHAR"
-        }
-      ],
-      "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE,\n    ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT,\n    ROUND(100 * DIV0NULL(SUM(GROSS_PROFIT), SUM(NET_REVENUE)), 1) AS GROSS_MARGIN_PCT,\n    MAX_BY(RECORDED_DRIVER, ABS(REVENUE_TARGET - NET_REVENUE)) AS TOP_DRIVER\nFROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\nWHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT\nORDER BY VARIANCE\nLIMIT 100",
       "filter_bindings": [
         {
           "filter_id": "MONTH"

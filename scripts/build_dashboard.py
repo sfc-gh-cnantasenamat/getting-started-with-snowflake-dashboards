@@ -448,25 +448,6 @@ add("ask", {"type": "text", "text": (
     "Drivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes.")},
     (8, 16, 4, 5))
 
-add("accounts", {"title": "Account Detail (sorted by variance)", "type": "table", "spec": {"columns": [
-    {"field": "CUSTOMER_NAME", "label": "Account"}, {"field": "REGION", "label": "Region"},
-    {"field": "SEGMENT", "label": "Segment"}, {"field": "NET_REVENUE", "label": "Net revenue (USD)"},
-    {"field": "REVENUE_TARGET", "label": "Target (USD)"}, {"field": "VARIANCE", "label": "Variance (USD)"},
-    {"field": "ATTAINMENT_PCT", "label": "Attainment %"}, {"field": "GROSS_MARGIN_PCT", "label": "Gross margin %"},
-    {"field": "TOP_DRIVER", "label": "Recorded driver"}]}},
-    (0, 26, 12, 6),
-    datasource(f"SELECT CUSTOMER_NAME, REGION, SEGMENT, ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE,\n"
-               f"    ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n"
-               f"    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n"
-               f"    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT,\n"
-               f"    ROUND(100 * DIV0NULL(SUM(GROSS_PROFIT), SUM(NET_REVENUE)), 1) AS GROSS_MARGIN_PCT,\n"
-               f"    MAX_BY(RECORDED_DRIVER, ABS(REVENUE_TARGET - NET_REVENUE)) AS TOP_DRIVER\n"
-               f"FROM ({base()})\n{where()}\n"
-               f"GROUP BY CUSTOMER_NAME, REGION, SEGMENT\nORDER BY VARIANCE\nLIMIT 100",
-               [("CUSTOMER_NAME", TXT), ("REGION", TXT), ("SEGMENT", TXT), ("NET_REVENUE", NUM),
-                ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT_PCT", NUM),
-                ("GROSS_MARGIN_PCT", NUM), ("TOP_DRIVER", TXT)]))
-
 COLORBARS = {"heatmap": ("HEAT", HEATMAP_SCALE, ".0%", "Attainment", (0.55, 1.2), HEAT_PRE),
              "by-region": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
              "geo-drill": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
@@ -486,7 +467,7 @@ for t in tiles:
 SCOPES = {"main": {}, "detail": {"parent": "main"}, "heat": {}, "region": {}, "geo_drill": {"parent": "main"}}
 TILE_SCOPE = {t: "main" for t in ("kpi-net-revenue", "kpi-attainment", "kpi-variance", "kpi-margin",
                                   "trend", "waterfall")}
-TILE_SCOPE.update({t: "detail" for t in ("drivers", "bubble", "accounts")})
+TILE_SCOPE.update({t: "detail" for t in ("drivers", "bubble")})
 TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill", "geo-drill-rows": "geo_drill"})
 
 
@@ -519,17 +500,20 @@ def options(table, column):
 
 # Footer: where every tile's numbers come from.
 add("source", {"type": "text", "text": (
-    f"Source: Database/Schema: `{FQ}` | Semantic View: `{CONFIG['semantic_view']}` | Tables: `REVENUE_MONTHLY` "
-    "(monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`.")},
-    (0, 32, 12, 1))
+    "**Source**\n\n"
+    f"**Database/Schema:** `{FQ}`\n\n"
+    f"**Semantic View:** `{CONFIG['semantic_view']}`\n\n"
+    "**Tables:** `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers), "
+    "`CUSTOMERS` (region and segment), and `PRODUCTS`.")},
+    (0, 0, 12, 3))
 
 
 # Tabs share every filter. The hierarchy chart with its account table, and the full account table,
 # each get their own tab; everything else stays on Overview. Tabs restart their grid at y=0.
-TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Filtering"), ("accounts", "Account Detail")]
-TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "accounts": "accounts"}
+TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Filtering"), ("source", "Data Source")]
+TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "source": "source"}
 layout.update({"geo-drill": {"x": 0, "y": 0, "w": 12, "h": 5}, "geo-drill-rows": {"x": 0, "y": 5, "w": 12, "h": 6},
-               "accounts": {"x": 0, "y": 0, "w": 12, "h": 9}, "source": {"x": 0, "y": 22, "w": 12, "h": 1}})
+               "source": {"x": 0, "y": 0, "w": 12, "h": 3}})
 
 dash = {
     "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse",
