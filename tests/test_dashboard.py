@@ -18,7 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("build_dashboard", ROOT / "scripts/build_dashboard.py")
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
-TILES = {tile["tile_id"]: tile for tile in MODULE.dash["tabs"][0]["tiles"]}
+TILES = {tile["tile_id"]: tile for tab in MODULE.dash["tabs"] for tile in tab["tiles"]}
+TAB_OF = {tile["tile_id"]: tab["tab_id"] for tab in MODULE.dash["tabs"] for tile in tab["tiles"]}
 
 
 def driver_rows(region=None, segment=None):
@@ -58,7 +59,13 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW", serialized)
 
     def test_actions_panel_and_layout(self):
-        self.assertEqual(len(TILES), 16)
+        self.assertEqual(len(TILES), 17)
+        self.assertEqual([(t["tab_id"], t["title"]) for t in MODULE.dash["tabs"]],
+                         [("default", "Overview"), ("hierarchy", "Hierarchical Filtering"),
+                          ("accounts", "Account Detail")])
+        for tab in MODULE.dash["tabs"]:
+            self.assertEqual(set(MODULE.dash["layout"][tab["tab_id"]]["positions"]),
+                             {t["tile_id"] for t in tab["tiles"]})
         self.assertEqual(TILES["actions"]["title"], "Try Chart Actions")
         positions = MODULE.dash["layout"]["default"]["positions"]
         self.assertEqual(positions["header"], {"x": 0, "y": 0, "w": 7, "h": 3})
@@ -120,8 +127,17 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(tile["scope"], "geo_drill")
         self.assertEqual(MODULE.dash["scopes"]["geo_drill"], {"parent": "main"})
         self.assertEqual(tile["spec"]["layer"][0]["encoding"]["y"]["field"], "LEVEL_LABEL")
-        positions = MODULE.dash["layout"]["default"]["positions"]
-        self.assertLess(positions["geo-drill"]["y"], positions["accounts"]["y"])
+        # The drill chart and its account table share a tab and a scope, table directly below.
+        self.assertEqual(TAB_OF["geo-drill"], "hierarchy")
+        self.assertEqual(TAB_OF["geo-drill-rows"], "hierarchy")
+        positions = MODULE.dash["layout"]["hierarchy"]["positions"]
+        chart = positions["geo-drill"]
+        self.assertEqual(positions["geo-drill-rows"]["y"], chart["y"] + chart["h"])
+        self.assertEqual(TILES["geo-drill-rows"]["scope"], "geo_drill")
+        rows = MODULE.dash["datasources"]["ds-geo-drill-rows"]
+        self.assertEqual(rows["hierarchy_bindings"], [{"hierarchy_id": "geo"}])
+        self.assertIn("{{ hierarchy_rows('geo') }}", rows["sql"])
+        self.assertNotIn("hierarchy_key", rows["sql"])
         self.assertEqual([(i["trigger"], i["operator"]) for i in tile["interactions"]],
                          [("select", "drill_down"), ("select_hierarchy_level", "drill_up"),
                           ("select_hierarchy_level", "set_hierarchy_level")])

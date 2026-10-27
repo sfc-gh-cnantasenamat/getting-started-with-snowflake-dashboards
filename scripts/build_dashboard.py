@@ -198,7 +198,7 @@ add("actions", {"title": "Try Chart Actions", "type": "text", "text": (
     "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n"
     "- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n"
     "- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n"
-    "- **Click** a bar in **Hierarchical Filtering** to go from region to segment to account; use its level trail to go back up.")}, (7, 0, 5, 2))
+    "- **Click** a bar on the **Hierarchical Filtering** tab to go from region to segment to account; use its level trail to go back up.")}, (7, 0, 5, 2))
 
 add("kpi-net-revenue", scorecard("Net Revenue", "USD, vs same period last year"), (0, 2, 3, 2),
     datasource(kpi_sql("{t}.NET"), KPI_COLUMNS))
@@ -303,6 +303,26 @@ add("geo-drill", {"title": "Hierarchical Filtering: Variance by Region, Segment,
                              {"field": "VARIANCE", "type": "quantitative", "format": "$,.0f", "title": "Variance"},
                              {"field": "ATTAINMENT", "type": "quantitative", "format": ".1%", "title": "Attainment"}]}}},
     (0, 21, 12, 5), geo_ds)
+
+# Accounts under the current drill member: hierarchy_rows without hierarchy_key keeps the rows of
+# the member the chart drilled into but always groups by account. Same scope, so it follows the drill.
+add("geo-drill-rows", {"title": "Accounts in the Current Drill Selection (sorted by variance)", "type": "table",
+                       "spec": {"columns": [
+    {"field": "CUSTOMER_NAME", "label": "Account"}, {"field": "REGION", "label": "Region"},
+    {"field": "SEGMENT", "label": "Segment"}, {"field": "NET_REVENUE", "label": "Net revenue (USD)"},
+    {"field": "REVENUE_TARGET", "label": "Target (USD)"}, {"field": "VARIANCE", "label": "Variance (USD)"},
+    {"field": "ATTAINMENT_PCT", "label": "Attainment %"}]}},
+    (0, 26, 12, 6), dict(datasource(
+        f"WITH base AS (\n    SELECT * FROM ({GEO_BASE})\n    {where()}\n)\n"
+        "SELECT\n    CUSTOMER_NAME, REGION, SEGMENT,\n"
+        "    ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE, ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n"
+        "    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n"
+        "    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT\n"
+        "FROM base\nWHERE\n    {{ hierarchy_rows('geo') }}\n"
+        "GROUP BY CUSTOMER_ID, CUSTOMER_NAME, REGION, SEGMENT\nORDER BY VARIANCE\nLIMIT 100",
+        [("CUSTOMER_NAME", TXT), ("REGION", TXT), ("SEGMENT", TXT), ("NET_REVENUE", NUM),
+         ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT_PCT", NUM)]),
+        hierarchy_bindings=[{"hierarchy_id": "geo"}]))
 
 # Palette fixed on 55-120% attainment: deep misses red, ~88% yellow, beating target teal.
 HEATMAP_SCALE = {"range": PALETTE, "domain": [0.55, 0.7125, 0.875, 1.0375, 1.2], "clamp": True, "interpolate": "rgb"}
@@ -467,7 +487,7 @@ SCOPES = {"main": {}, "detail": {"parent": "main"}, "heat": {}, "region": {}, "g
 TILE_SCOPE = {t: "main" for t in ("kpi-net-revenue", "kpi-attainment", "kpi-variance", "kpi-margin",
                                   "trend", "waterfall")}
 TILE_SCOPE.update({t: "detail" for t in ("drivers", "bubble", "accounts")})
-TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill"})
+TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill", "geo-drill-rows": "geo_drill"})
 
 
 def set_filter(scopes, *fields):
@@ -504,9 +524,17 @@ add("source", {"type": "text", "text": (
     (0, 32, 12, 1))
 
 
+# Tabs share every filter. The hierarchy chart with its account table, and the full account table,
+# each get their own tab; everything else stays on Overview. Tabs restart their grid at y=0.
+TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Filtering"), ("accounts", "Account Detail")]
+TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "accounts": "accounts"}
+layout.update({"geo-drill": {"x": 0, "y": 0, "w": 12, "h": 5}, "geo-drill-rows": {"x": 0, "y": 5, "w": 12, "h": 6},
+               "accounts": {"x": 0, "y": 0, "w": 12, "h": 9}, "source": {"x": 0, "y": 22, "w": 12, "h": 1}})
+
 dash = {
     "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse",
-    "tabs": [{"order": 0, "tab_id": "default", "title": "Overview", "tiles": tiles}],
+    "tabs": [{"order": i, "tab_id": tab_id, "title": title, "tiles": [t for t in tiles if TILE_TAB.get(t["tile_id"], "default") == tab_id]}
+             for i, (tab_id, title) in enumerate(TABS)],
     "hierarchies": HIERARCHIES,
     "filters": {
         "MONTH": {"label": "Period", "mode": "range", "valueType": "DATE",
@@ -522,7 +550,9 @@ dash = {
         "DRILL_DRIVER": {"label": "Drill: driver path", "mode": "single_select", "valueType": "STRING",
                          "default_values": [], "options": options("REVENUE_MONTHLY", "RECORDED_DRIVER")}},
     "scopes": SCOPES,
-    "layout": {"default": {"meta": {"default": True}, "positions": layout}},
+    "layout": {tab_id: {"meta": {"default": True} if tab_id == "default" else {},
+                        "positions": {k: v for k, v in layout.items() if TILE_TAB.get(k, "default") == tab_id}}
+               for tab_id, _ in TABS},
     "datasources": datasources,
 }
 
