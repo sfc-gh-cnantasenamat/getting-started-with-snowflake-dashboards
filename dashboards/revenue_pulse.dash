@@ -3255,7 +3255,7 @@
         },
         {
           "tile_id": "geo-table",
-          "title": "Variance by Region, Segment, and Customer (Expand a row to drill down)",
+          "title": "Variance by Region, Segment, and Customer (Follows the chart; expand a row to drill down)",
           "type": "table",
           "spec": {
             "columns": [
@@ -3283,7 +3283,8 @@
           },
           "datasources": [
             "ds-geo-table"
-          ]
+          ],
+          "scope": "geo_drill"
         }
       ]
     },
@@ -3335,57 +3336,6 @@
         {
           "id": "account",
           "label": "Account",
-          "key": {
-            "expr": "CUSTOMER_ID",
-            "type": "STRING"
-          },
-          "display": "CUSTOMER_NAME",
-          "group_by": [
-            "CUSTOMER_ID",
-            "CUSTOMER_NAME"
-          ]
-        }
-      ],
-      "default_values": [
-        {
-          "depth": 0
-        }
-      ]
-    },
-    "geo_table": {
-      "label": "Region, Segment, and Customer",
-      "all_member": {
-        "label": "All regions"
-      },
-      "levels": [
-        {
-          "id": "region",
-          "label": "Region",
-          "key": {
-            "expr": "REGION",
-            "type": "STRING"
-          },
-          "display": "REGION",
-          "group_by": [
-            "REGION"
-          ]
-        },
-        {
-          "id": "segment",
-          "label": "Segment",
-          "key": {
-            "expr": "SEGMENT_KEY",
-            "type": "STRING"
-          },
-          "display": "SEGMENT",
-          "group_by": [
-            "SEGMENT_KEY",
-            "SEGMENT"
-          ]
-        },
-        {
-          "id": "account",
-          "label": "Customer Name",
           "key": {
             "expr": "CUSTOMER_ID",
             "type": "STRING"
@@ -4009,7 +3959,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "WITH base AS (\n    SELECT * FROM (SELECT *, REGION || ' \u203a ' || SEGMENT AS SEGMENT_KEY, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n        SELECT R.MONTH, R.RECORDED_DRIVER, C.CUSTOMER_ID, C.CUSTOMER_NAME, C.REGION, C.SEGMENT,\n            P.PRODUCT_NAME,\n            (R.GROSS_REVENUE_CENTS - R.DISCOUNT_CENTS - R.REFUND_CENTS) / 100 AS NET_REVENUE,\n            R.TARGET_CENTS / 100 AS REVENUE_TARGET\n        FROM REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY R\n        JOIN REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS C ON R.CUSTOMER_ID = C.CUSTOMER_ID\n        JOIN REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS P ON R.PRODUCT_ID = P.PRODUCT_ID))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n)\nSELECT\n    {{ hierarchy_key('geo_table') }},\n    ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE, ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT\nFROM base\nWHERE\n    {{ hierarchy_rows('geo_table') }}\nGROUP BY\n    {{ hierarchy_key('geo_table') }}\nORDER BY VARIANCE",
+      "sql": "WITH base AS (\n    SELECT * FROM (SELECT *, REGION || ' \u203a ' || SEGMENT AS SEGMENT_KEY, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n        SELECT R.MONTH, R.RECORDED_DRIVER, C.CUSTOMER_ID, C.CUSTOMER_NAME, C.REGION, C.SEGMENT,\n            P.PRODUCT_NAME,\n            (R.GROSS_REVENUE_CENTS - R.DISCOUNT_CENTS - R.REFUND_CENTS) / 100 AS NET_REVENUE,\n            R.TARGET_CENTS / 100 AS REVENUE_TARGET\n        FROM REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY R\n        JOIN REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS C ON R.CUSTOMER_ID = C.CUSTOMER_ID\n        JOIN REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS P ON R.PRODUCT_ID = P.PRODUCT_ID))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n)\nSELECT\n    {{ hierarchy_key('geo') }},\n    ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE, ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT\nFROM base\nWHERE\n    {{ hierarchy_rows('geo') }}\nGROUP BY\n    {{ hierarchy_key('geo') }}\nORDER BY VARIANCE",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -4035,7 +3985,7 @@
       ],
       "hierarchy_bindings": [
         {
-          "hierarchy_id": "geo_table"
+          "hierarchy_id": "geo"
         }
       ]
     },
