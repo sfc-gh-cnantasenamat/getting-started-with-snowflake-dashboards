@@ -450,7 +450,6 @@ add("ask", {"type": "text", "text": (
 
 COLORBARS = {"heatmap": ("HEAT", HEATMAP_SCALE, ".0%", "Attainment", (0.55, 1.2), HEAT_PRE),
              "by-region": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
-             "geo-drill": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
              "waterfall": ("AMOUNT", VARIANCE_SCALE, "$,.2s", "Amount", None)}
 for t in tiles:
     if t["tile_id"] in COLORBARS:
