@@ -138,6 +138,36 @@ def with_colorbar(spec, field, scale, fmt, title, domain=None, pre=()):
                         "axis": {"x": "independent", "y": "independent"}}}
 
 
+def with_bottom_colorbar(spec, field, scale, fmt, title):
+    """Same idea as with_colorbar, laid flat along the bottom of the plot for narrow tiles.
+
+    The chart's value axis moves to the top so the strip and its labels own the bottom edge;
+    three ticks with overlap removal keep the labels from colliding in a 1/3-width tile.
+    """
+    bar = {"transform": [
+        {"aggregate": [{"op": "min", "field": field, "as": "LO"}, {"op": "max", "field": field, "as": "HI"}]},
+        {"calculate": "sequence(0, 50)", "as": "I"}, {"flatten": ["I"]},
+        {"calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50", "as": "V"},
+        {"calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50", "as": "V2"}],
+        "mark": {"type": "rect"},
+        "encoding": {
+            "x": {"field": "V", "type": "quantitative", "title": title,
+                  "scale": {"zero": False, "nice": False},
+                  "axis": {"orient": "bottom", "format": fmt, "tickCount": 3, "labelOverlap": "greedy",
+                           "labelFlush": True, "grid": False, "domain": False}},
+            "x2": {"field": "V2"},
+            "y": {"datum": 0, "axis": None,
+                  "scale": {"domain": [0, 1], "range": [{"expr": "height"}, {"expr": "height - 12"}]}},
+            "y2": {"datum": 1},
+            "color": {"field": "V", "type": "quantitative", "scale": scale, "legend": None}}}
+    enc = spec["encoding"]
+    enc["x"]["axis"] = {**enc["x"].get("axis", {}), "orient": "top"}
+    enc["y"]["scale"] = {**enc["y"].get("scale", {}), "range": [0, {"expr": "height - 30"}]}
+    return {"layer": [spec, bar],
+            "resolve": {"scale": {"x": "independent", "y": "independent", "color": "independent"},
+                        "axis": {"x": "independent", "y": "independent"}}}
+
+
 def drill_sql(drill, metrics):
     """Drilldown without a native drill feature: once the drill filter is set, show the first level
     that still has more than one value. Each bar carries its full path (e.g. DRILL_REGION), so a click sets the
@@ -452,6 +482,8 @@ COLORBARS = {"heatmap": ("HEAT", HEATMAP_SCALE, ".0%", "Attainment", (0.55, 1.2)
              "by-region": ("VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance", None),
              "waterfall": ("AMOUNT", VARIANCE_SCALE, "$,.2s", "Amount", None)}
 for t in tiles:
+    if t["tile_id"] == "geo-drill":
+        t["spec"] = with_bottom_colorbar(t["spec"], "VARIANCE", VARIANCE_SCALE, "$,.2s", "Variance")
     if t["tile_id"] in COLORBARS:
         t["spec"] = with_colorbar(t["spec"], *COLORBARS[t["tile_id"]])
 

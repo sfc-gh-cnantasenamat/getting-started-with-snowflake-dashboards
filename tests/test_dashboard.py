@@ -126,7 +126,7 @@ class DashboardTests(unittest.TestCase):
         tile = TILES["geo-drill"]
         self.assertEqual(tile["scope"], "geo_drill")
         self.assertEqual(MODULE.dash["scopes"]["geo_drill"], {"parent": "main"})
-        self.assertEqual(tile["spec"]["encoding"]["y"]["field"], "LEVEL_LABEL")
+        self.assertEqual(tile["spec"]["layer"][0]["encoding"]["y"]["field"], "LEVEL_LABEL")
         # The drill chart and its account table share a tab and a scope, table directly below.
         self.assertEqual(TAB_OF["geo-drill"], "hierarchy")
         self.assertEqual(TAB_OF["geo-drill-rows"], "hierarchy")

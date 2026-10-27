@@ -2879,76 +2879,197 @@
           "title": "Hierarchical Filtering: Variance by Region, Segment, and Account (Click a bar to drill in)",
           "type": "chart",
           "spec": {
-            "mark": {
-              "type": "bar",
-              "cornerRadiusEnd": 3
-            },
-            "encoding": {
-              "y": {
-                "field": "LEVEL_LABEL",
-                "type": "nominal",
-                "sort": "x",
-                "title": null,
-                "axis": {
-                  "labelLimit": 180
+            "layer": [
+              {
+                "mark": {
+                  "type": "bar",
+                  "cornerRadiusEnd": 3
+                },
+                "encoding": {
+                  "y": {
+                    "field": "LEVEL_LABEL",
+                    "type": "nominal",
+                    "sort": "x",
+                    "title": null,
+                    "axis": {
+                      "labelLimit": 180
+                    },
+                    "scale": {
+                      "range": [
+                        0,
+                        {
+                          "expr": "height - 30"
+                        }
+                      ]
+                    }
+                  },
+                  "x": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "USD vs target",
+                    "stack": null,
+                    "axis": {
+                      "format": "$,.2s",
+                      "orient": "top"
+                    }
+                  },
+                  "color": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "range": [
+                        "#C8524B",
+                        "#DD8459",
+                        "#E2C27A",
+                        "#5E8AC7",
+                        "#3E9F98"
+                      ],
+                      "interpolate": "rgb"
+                    },
+                    "legend": null
+                  },
+                  "tooltip": [
+                    {
+                      "field": "LEVEL_LABEL",
+                      "type": "nominal",
+                      "title": "Member"
+                    },
+                    {
+                      "field": "NET_REVENUE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Net revenue"
+                    },
+                    {
+                      "field": "REVENUE_TARGET",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Target"
+                    },
+                    {
+                      "field": "VARIANCE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Variance"
+                    },
+                    {
+                      "field": "ATTAINMENT",
+                      "type": "quantitative",
+                      "format": ".1%",
+                      "title": "Attainment"
+                    }
+                  ]
                 }
               },
-              "x": {
-                "field": "VARIANCE",
-                "type": "quantitative",
-                "title": "USD vs target",
-                "stack": null,
-                "axis": {
-                  "format": "$,.2s"
+              {
+                "transform": [
+                  {
+                    "aggregate": [
+                      {
+                        "op": "min",
+                        "field": "VARIANCE",
+                        "as": "LO"
+                      },
+                      {
+                        "op": "max",
+                        "field": "VARIANCE",
+                        "as": "HI"
+                      }
+                    ]
+                  },
+                  {
+                    "calculate": "sequence(0, 50)",
+                    "as": "I"
+                  },
+                  {
+                    "flatten": [
+                      "I"
+                    ]
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
+                    "as": "V"
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
+                    "as": "V2"
+                  }
+                ],
+                "mark": {
+                  "type": "rect"
+                },
+                "encoding": {
+                  "x": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "zero": false,
+                      "nice": false
+                    },
+                    "axis": {
+                      "orient": "bottom",
+                      "format": "$,.2s",
+                      "tickCount": 3,
+                      "labelOverlap": "greedy",
+                      "labelFlush": true,
+                      "grid": false,
+                      "domain": false
+                    }
+                  },
+                  "x2": {
+                    "field": "V2"
+                  },
+                  "y": {
+                    "datum": 0,
+                    "axis": null,
+                    "scale": {
+                      "domain": [
+                        0,
+                        1
+                      ],
+                      "range": [
+                        {
+                          "expr": "height"
+                        },
+                        {
+                          "expr": "height - 12"
+                        }
+                      ]
+                    }
+                  },
+                  "y2": {
+                    "datum": 1
+                  },
+                  "color": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "scale": {
+                      "range": [
+                        "#C8524B",
+                        "#DD8459",
+                        "#E2C27A",
+                        "#5E8AC7",
+                        "#3E9F98"
+                      ],
+                      "interpolate": "rgb"
+                    },
+                    "legend": null
+                  }
                 }
+              }
+            ],
+            "resolve": {
+              "scale": {
+                "x": "independent",
+                "y": "independent",
+                "color": "independent"
               },
-              "color": {
-                "field": "VARIANCE",
-                "type": "quantitative",
-                "title": "Variance",
-                "scale": {
-                  "range": [
-                    "#C8524B",
-                    "#DD8459",
-                    "#E2C27A",
-                    "#5E8AC7",
-                    "#3E9F98"
-                  ],
-                  "interpolate": "rgb"
-                },
-                "legend": null
-              },
-              "tooltip": [
-                {
-                  "field": "LEVEL_LABEL",
-                  "type": "nominal",
-                  "title": "Member"
-                },
-                {
-                  "field": "NET_REVENUE",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Net revenue"
-                },
-                {
-                  "field": "REVENUE_TARGET",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Target"
-                },
-                {
-                  "field": "VARIANCE",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Variance"
-                },
-                {
-                  "field": "ATTAINMENT",
-                  "type": "quantitative",
-                  "format": ".1%",
-                  "title": "Attainment"
-                }
-              ]
+              "axis": {
+                "x": "independent",
+                "y": "independent"
+              }
             }
           },
           "datasources": [
