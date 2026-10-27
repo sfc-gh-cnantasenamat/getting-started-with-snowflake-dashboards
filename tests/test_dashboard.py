@@ -185,3 +185,17 @@ class DashboardRenderTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class CompactDashboardTests(unittest.TestCase):
+    def test_compact_has_two_tabs_and_no_text_tiles(self):
+        spec = importlib.util.spec_from_file_location("build_compact", ROOT / "scripts/build_compact.py")
+        compact = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(compact)
+        self.assertEqual([t["title"] for t in compact.dash["tabs"]], ["Overview", "Drill Down"])
+        tiles = [t for tab in compact.dash["tabs"] for t in tab["tiles"]]
+        self.assertFalse([t["tile_id"] for t in tiles if t["type"] == "text"])
+        for tab in compact.dash["tabs"]:
+            self.assertEqual(set(compact.dash["layout"][tab["tab_id"]]["positions"]),
+                             {t["tile_id"] for t in tab["tiles"]})
+        stored = json.loads((ROOT / "dashboards/revenue_pulse_compact.dash").read_text())
+        self.assertEqual(stored, compact.dash)
