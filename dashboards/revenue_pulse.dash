@@ -18,7 +18,7 @@
           "tile_id": "actions",
           "title": "Try Chart Actions",
           "type": "text",
-          "text": "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n- **Click** a bar in **Hierarchical Filtering** to go from region to segment to account; use its level trail to go back up."
+          "text": "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n- **Click** a bar on the **Hierarchical Filtering** tab to go from region to segment to account; use its level trail to go back up."
         },
         {
           "tile_id": "kpi-net-revenue",
@@ -2027,254 +2027,6 @@
           ]
         },
         {
-          "tile_id": "geo-drill",
-          "title": "Hierarchical Filtering: Variance by Region, Segment, and Account (Click a bar to drill in)",
-          "type": "chart",
-          "spec": {
-            "layer": [
-              {
-                "mark": {
-                  "type": "bar",
-                  "cornerRadiusEnd": 3
-                },
-                "encoding": {
-                  "y": {
-                    "field": "LEVEL_LABEL",
-                    "type": "nominal",
-                    "sort": "x",
-                    "title": null,
-                    "axis": {
-                      "labelLimit": 180
-                    }
-                  },
-                  "x": {
-                    "field": "VARIANCE",
-                    "type": "quantitative",
-                    "title": "USD vs target",
-                    "stack": null,
-                    "axis": {
-                      "format": "$,.2s"
-                    },
-                    "scale": {
-                      "range": [
-                        0,
-                        {
-                          "expr": "width - 28"
-                        }
-                      ]
-                    }
-                  },
-                  "color": {
-                    "field": "VARIANCE",
-                    "type": "quantitative",
-                    "title": "Variance",
-                    "scale": {
-                      "range": [
-                        "#C8524B",
-                        "#DD8459",
-                        "#E2C27A",
-                        "#5E8AC7",
-                        "#3E9F98"
-                      ],
-                      "interpolate": "rgb"
-                    },
-                    "legend": null
-                  },
-                  "tooltip": [
-                    {
-                      "field": "LEVEL_LABEL",
-                      "type": "nominal",
-                      "title": "Member"
-                    },
-                    {
-                      "field": "NET_REVENUE",
-                      "type": "quantitative",
-                      "format": "$,.0f",
-                      "title": "Net revenue"
-                    },
-                    {
-                      "field": "REVENUE_TARGET",
-                      "type": "quantitative",
-                      "format": "$,.0f",
-                      "title": "Target"
-                    },
-                    {
-                      "field": "VARIANCE",
-                      "type": "quantitative",
-                      "format": "$,.0f",
-                      "title": "Variance"
-                    },
-                    {
-                      "field": "ATTAINMENT",
-                      "type": "quantitative",
-                      "format": ".1%",
-                      "title": "Attainment"
-                    }
-                  ]
-                }
-              },
-              {
-                "transform": [
-                  {
-                    "aggregate": [
-                      {
-                        "op": "min",
-                        "field": "VARIANCE",
-                        "as": "LO"
-                      },
-                      {
-                        "op": "max",
-                        "field": "VARIANCE",
-                        "as": "HI"
-                      }
-                    ]
-                  },
-                  {
-                    "calculate": "sequence(0, 50)",
-                    "as": "I"
-                  },
-                  {
-                    "flatten": [
-                      "I"
-                    ]
-                  },
-                  {
-                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
-                    "as": "V"
-                  },
-                  {
-                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
-                    "as": "V2"
-                  }
-                ],
-                "mark": {
-                  "type": "rect"
-                },
-                "encoding": {
-                  "x": {
-                    "datum": 0,
-                    "axis": null,
-                    "scale": {
-                      "domain": [
-                        0,
-                        1
-                      ],
-                      "range": [
-                        {
-                          "expr": "width - 14"
-                        },
-                        {
-                          "expr": "width"
-                        }
-                      ]
-                    }
-                  },
-                  "x2": {
-                    "datum": 1
-                  },
-                  "y": {
-                    "field": "V",
-                    "type": "quantitative",
-                    "title": "Variance",
-                    "scale": {
-                      "zero": false,
-                      "nice": false,
-                      "range": [
-                        {
-                          "expr": "height * 0.85"
-                        },
-                        {
-                          "expr": "height * 0.15"
-                        }
-                      ]
-                    },
-                    "axis": {
-                      "orient": "right",
-                      "offset": 4,
-                      "format": "$,.2s",
-                      "tickCount": 4,
-                      "grid": false,
-                      "domain": false,
-                      "titleAngle": 90
-                    }
-                  },
-                  "y2": {
-                    "field": "V2"
-                  },
-                  "color": {
-                    "field": "V",
-                    "type": "quantitative",
-                    "scale": {
-                      "range": [
-                        "#C8524B",
-                        "#DD8459",
-                        "#E2C27A",
-                        "#5E8AC7",
-                        "#3E9F98"
-                      ],
-                      "interpolate": "rgb"
-                    },
-                    "legend": null
-                  }
-                }
-              }
-            ],
-            "resolve": {
-              "scale": {
-                "x": "independent",
-                "y": "independent",
-                "color": "independent"
-              },
-              "axis": {
-                "x": "independent",
-                "y": "independent"
-              }
-            }
-          },
-          "datasources": [
-            "ds-geo-drill"
-          ],
-          "scope": "geo_drill",
-          "interactions": [
-            {
-              "trigger": "select",
-              "fields": [
-                "LEVEL_KEY"
-              ],
-              "operator": "drill_down",
-              "targets": [
-                {
-                  "scope": "geo_drill",
-                  "fields": [
-                    "LEVEL_KEY"
-                  ],
-                  "hierarchy": "geo"
-                }
-              ]
-            },
-            {
-              "trigger": "select_hierarchy_level",
-              "operator": "drill_up",
-              "targets": [
-                {
-                  "scope": "geo_drill",
-                  "hierarchy": "geo"
-                }
-              ]
-            },
-            {
-              "trigger": "select_hierarchy_level",
-              "operator": "set_hierarchy_level",
-              "targets": [
-                {
-                  "scope": "geo_drill",
-                  "hierarchy": "geo"
-                }
-              ]
-            }
-          ]
-        },
-        {
           "tile_id": "heatmap",
           "title": "Target Attainment (Click a cell to filter by Region and Segment)",
           "type": "chart",
@@ -3116,6 +2868,273 @@
           "text": "### Ask Revenue Advisor\nOnce published to CoWork, use the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
         },
         {
+          "tile_id": "source",
+          "type": "text",
+          "text": "Source: Database/Schema: `TEMP.CNANTASENAMAT` | Semantic View: `REVENUE_SEMANTIC_VIEW` | Tables: `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`."
+        }
+      ]
+    },
+    {
+      "order": 1,
+      "tab_id": "hierarchy",
+      "title": "Hierarchical Filtering",
+      "tiles": [
+        {
+          "tile_id": "geo-drill",
+          "title": "Hierarchical Filtering: Variance by Region, Segment, and Account (Click a bar to drill in)",
+          "type": "chart",
+          "spec": {
+            "layer": [
+              {
+                "mark": {
+                  "type": "bar",
+                  "cornerRadiusEnd": 3
+                },
+                "encoding": {
+                  "y": {
+                    "field": "LEVEL_LABEL",
+                    "type": "nominal",
+                    "sort": "x",
+                    "title": null,
+                    "axis": {
+                      "labelLimit": 180
+                    }
+                  },
+                  "x": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "USD vs target",
+                    "stack": null,
+                    "axis": {
+                      "format": "$,.2s"
+                    },
+                    "scale": {
+                      "range": [
+                        0,
+                        {
+                          "expr": "width - 28"
+                        }
+                      ]
+                    }
+                  },
+                  "color": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "range": [
+                        "#C8524B",
+                        "#DD8459",
+                        "#E2C27A",
+                        "#5E8AC7",
+                        "#3E9F98"
+                      ],
+                      "interpolate": "rgb"
+                    },
+                    "legend": null
+                  },
+                  "tooltip": [
+                    {
+                      "field": "LEVEL_LABEL",
+                      "type": "nominal",
+                      "title": "Member"
+                    },
+                    {
+                      "field": "NET_REVENUE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Net revenue"
+                    },
+                    {
+                      "field": "REVENUE_TARGET",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Target"
+                    },
+                    {
+                      "field": "VARIANCE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Variance"
+                    },
+                    {
+                      "field": "ATTAINMENT",
+                      "type": "quantitative",
+                      "format": ".1%",
+                      "title": "Attainment"
+                    }
+                  ]
+                }
+              },
+              {
+                "transform": [
+                  {
+                    "aggregate": [
+                      {
+                        "op": "min",
+                        "field": "VARIANCE",
+                        "as": "LO"
+                      },
+                      {
+                        "op": "max",
+                        "field": "VARIANCE",
+                        "as": "HI"
+                      }
+                    ]
+                  },
+                  {
+                    "calculate": "sequence(0, 50)",
+                    "as": "I"
+                  },
+                  {
+                    "flatten": [
+                      "I"
+                    ]
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
+                    "as": "V"
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
+                    "as": "V2"
+                  }
+                ],
+                "mark": {
+                  "type": "rect"
+                },
+                "encoding": {
+                  "x": {
+                    "datum": 0,
+                    "axis": null,
+                    "scale": {
+                      "domain": [
+                        0,
+                        1
+                      ],
+                      "range": [
+                        {
+                          "expr": "width - 14"
+                        },
+                        {
+                          "expr": "width"
+                        }
+                      ]
+                    }
+                  },
+                  "x2": {
+                    "datum": 1
+                  },
+                  "y": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "zero": false,
+                      "nice": false,
+                      "range": [
+                        {
+                          "expr": "height * 0.85"
+                        },
+                        {
+                          "expr": "height * 0.15"
+                        }
+                      ]
+                    },
+                    "axis": {
+                      "orient": "right",
+                      "offset": 4,
+                      "format": "$,.2s",
+                      "tickCount": 4,
+                      "grid": false,
+                      "domain": false,
+                      "titleAngle": 90
+                    }
+                  },
+                  "y2": {
+                    "field": "V2"
+                  },
+                  "color": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "scale": {
+                      "range": [
+                        "#C8524B",
+                        "#DD8459",
+                        "#E2C27A",
+                        "#5E8AC7",
+                        "#3E9F98"
+                      ],
+                      "interpolate": "rgb"
+                    },
+                    "legend": null
+                  }
+                }
+              }
+            ],
+            "resolve": {
+              "scale": {
+                "x": "independent",
+                "y": "independent",
+                "color": "independent"
+              },
+              "axis": {
+                "x": "independent",
+                "y": "independent"
+              }
+            }
+          },
+          "datasources": [
+            "ds-geo-drill"
+          ],
+          "scope": "geo_drill",
+          "interactions": [
+            {
+              "trigger": "select",
+              "fields": [
+                "LEVEL_KEY"
+              ],
+              "operator": "drill_down",
+              "targets": [
+                {
+                  "scope": "geo_drill",
+                  "fields": [
+                    "LEVEL_KEY"
+                  ],
+                  "hierarchy": "geo"
+                }
+              ]
+            },
+            {
+              "trigger": "select_hierarchy_level",
+              "operator": "drill_up",
+              "targets": [
+                {
+                  "scope": "geo_drill",
+                  "hierarchy": "geo"
+                }
+              ]
+            },
+            {
+              "trigger": "select_hierarchy_level",
+              "operator": "set_hierarchy_level",
+              "targets": [
+                {
+                  "scope": "geo_drill",
+                  "hierarchy": "geo"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "tab_id": "accounts",
+      "title": "Account Detail",
+      "tiles": [
+        {
           "tile_id": "accounts",
           "title": "Account Detail (sorted by variance)",
           "type": "table",
@@ -3163,11 +3182,6 @@
             "ds-accounts"
           ],
           "scope": "detail"
-        },
-        {
-          "tile_id": "source",
-          "type": "text",
-          "text": "Source: Database/Schema: `REVENUE_PULSE_DB.DASHBOARD_DEMO` | Semantic View: `REVENUE_SEMANTIC_VIEW` | Tables: `REVENUE_MONTHLY` (monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`."
         }
       ]
     }
@@ -3359,12 +3373,6 @@
           "w": 6,
           "h": 4
         },
-        "geo-drill": {
-          "x": 0,
-          "y": 22,
-          "w": 12,
-          "h": 5
-        },
         "heatmap": {
           "x": 6,
           "y": 9,
@@ -3395,17 +3403,33 @@
           "w": 4,
           "h": 5
         },
-        "accounts": {
-          "x": 0,
-          "y": 27,
-          "w": 12,
-          "h": 6
-        },
         "source": {
           "x": 0,
-          "y": 33,
+          "y": 22,
           "w": 12,
           "h": 1
+        }
+      }
+    },
+    "hierarchy": {
+      "meta": {},
+      "positions": {
+        "geo-drill": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 5
+        }
+      }
+    },
+    "accounts": {
+      "meta": {},
+      "positions": {
+        "accounts": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 9
         }
       }
     }
