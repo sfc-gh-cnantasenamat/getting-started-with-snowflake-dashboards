@@ -59,7 +59,7 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW", serialized)
 
     def test_actions_panel_and_layout(self):
-        self.assertEqual(len(TILES), 24)
+        self.assertEqual(len(TILES), 26)
         self.assertEqual([(t["tab_id"], t["title"]) for t in MODULE.dash["tabs"]],
                          [("default", "Overview"), ("chart_actions", "Chart Actions"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table"),
                           ("source", "Data Source")])

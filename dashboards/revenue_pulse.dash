@@ -3287,7 +3287,12 @@
         {
           "tile_id": "hierarchy-help",
           "type": "text",
-          "text": "### Hierarchical Chart\nA hierarchy chart steps through **Region > Segment > Account** in one chart, with each level aggregated by its own query. The account table beside it lists the accounts under whatever the chart is showing.\n\n- **Click a bar** to drill into that member (a region opens its segments, a segment its accounts).\n- **Use the level trail** above the chart (Region, Segment, Account) to go back up or jump to a level.\n- **The filters** at the top of the dashboard still apply at every level."
+          "text": "### Hierarchical Chart\nA hierarchy chart steps through **Region > Segment > Account** in one chart, with each level aggregated by its own query. The account table beside it lists the accounts under whatever the chart is showing."
+        },
+        {
+          "tile_id": "hierarchy-help-steps",
+          "type": "text",
+          "text": "### How to Use\n- **Click a bar** to drill into that member (a region opens its segments, a segment its accounts).\n- **Use the level trail** above the chart (Region, Segment, Account) to go back up or jump to a level.\n- **The filters** at the top of the dashboard still apply at every level."
         }
       ]
     },
@@ -3331,7 +3336,12 @@
         {
           "tile_id": "hierarchy-table-help",
           "type": "text",
-          "text": "### Hierarchical Table\nA hierarchy table shows **Region > Segment > Customer Name** as rows that open in place, so you can compare levels side by side without leaving the table.\n\n- **Click the arrow** next to a row to expand it to the next level; click again to collapse it.\n- **Expand several rows** at once to compare segments or customers across regions.\n- **The filters** at the top of the dashboard still apply to every row."
+          "text": "### Hierarchical Table\nA hierarchy table shows **Region > Segment > Customer Name** as rows that open in place, so you can compare levels side by side without leaving the table."
+        },
+        {
+          "tile_id": "hierarchy-table-help-steps",
+          "type": "text",
+          "text": "### How to Use\n- **Click the arrow** next to a row to expand it to the next level; click again to collapse it.\n- **Expand several rows** at once to compare segments or customers across regions.\n- **The filters** at the top of the dashboard still apply to every row."
         }
       ]
     },
@@ -3620,7 +3630,13 @@
         "hierarchy-help": {
           "x": 0,
           "y": 0,
-          "w": 12,
+          "w": 6,
+          "h": 2
+        },
+        "hierarchy-help-steps": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
           "h": 2
         }
       }
@@ -3637,7 +3653,13 @@
         "hierarchy-table-help": {
           "x": 0,
           "y": 0,
-          "w": 12,
+          "w": 6,
+          "h": 2
+        },
+        "hierarchy-table-help-steps": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
           "h": 2
         }
       }

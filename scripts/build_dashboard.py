@@ -575,19 +575,23 @@ add("hierarchy-help", {"type": "text", "text": (
     "### Hierarchical Chart\n"
     "A hierarchy chart steps through **Region > Segment > Account** in one chart, with each level "
     "aggregated by its own query. The account table beside it lists the accounts under whatever the "
-    "chart is showing.\n\n"
+    "chart is showing.")}, (0, 0, 6, 3))
+add("hierarchy-help-steps", {"type": "text", "text": (
+    "### How to Use\n"
     "- **Click a bar** to drill into that member (a region opens its segments, a segment its accounts).\n"
     "- **Use the level trail** above the chart (Region, Segment, Account) to go back up or jump to a level.\n"
     "- **The filters** at the top of the dashboard still apply at every level.")},
-    (0, 0, 12, 3))
+    (6, 0, 6, 3))
 add("hierarchy-table-help", {"type": "text", "text": (
     "### Hierarchical Table\n"
     "A hierarchy table shows **Region > Segment > Customer Name** as rows that open in place, so you "
-    "can compare levels side by side without leaving the table.\n\n"
+    "can compare levels side by side without leaving the table.")}, (0, 0, 6, 3))
+add("hierarchy-table-help-steps", {"type": "text", "text": (
+    "### How to Use\n"
     "- **Click the arrow** next to a row to expand it to the next level; click again to collapse it.\n"
     "- **Expand several rows** at once to compare segments or customers across regions.\n"
     "- **The filters** at the top of the dashboard still apply to every row.")},
-    (0, 0, 12, 3))
+    (6, 0, 6, 3))
 
 add("chart-actions-help", {"type": "text", "text": (
     "### Chart Actions\n"
@@ -627,8 +631,8 @@ TABS = [("default", "Overview"), ("chart_actions", "Chart Actions"), ("hierarchy
 TILE_TAB = {**{t: "chart_actions" for t in ("chart-actions-help", "help-trend", "trend", "help-region",
                                            "by-region", "help-heatmap", "heatmap", "help-targets",
                                            "drivers", "waterfall", "bubble")},
-            "geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy_table", "hierarchy-help": "hierarchy",
-            "hierarchy-table-help": "hierarchy_table", "source": "source"}
+            "geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy_table", "hierarchy-help": "hierarchy", "hierarchy-help-steps": "hierarchy",
+            "hierarchy-table-help": "hierarchy_table", "hierarchy-table-help-steps": "hierarchy_table", "source": "source"}
 layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 2},
                "help-trend": {"x": 0, "y": 2, "w": 4, "h": 4}, "trend": {"x": 4, "y": 2, "w": 8, "h": 4},
                "help-region": {"x": 0, "y": 6, "w": 4, "h": 4}, "by-region": {"x": 4, "y": 6, "w": 8, "h": 4},
@@ -639,9 +643,9 @@ layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 2},
                "ask": {"x": 8, "y": 0, "w": 4, "h": 4},
                **{k: {"x": x, "y": 4, "w": 3, "h": 2} for k, x in (("kpi-net-revenue", 0), ("kpi-attainment", 3),
                                                                   ("kpi-variance", 6), ("kpi-margin", 9))},
-               "hierarchy-help": {"x": 0, "y": 0, "w": 12, "h": 2},
+               "hierarchy-help": {"x": 0, "y": 0, "w": 6, "h": 2}, "hierarchy-help-steps": {"x": 6, "y": 0, "w": 6, "h": 2},
                "geo-drill": {"x": 0, "y": 2, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 2, "w": 8, "h": 6},
-               "hierarchy-table-help": {"x": 0, "y": 0, "w": 12, "h": 2},
+               "hierarchy-table-help": {"x": 0, "y": 0, "w": 6, "h": 2}, "hierarchy-table-help-steps": {"x": 6, "y": 0, "w": 6, "h": 2},
                "geo-table": {"x": 0, "y": 2, "w": 12, "h": 8},
                "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
 
