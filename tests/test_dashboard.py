@@ -136,9 +136,8 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual((positions["geo-table"]["x"], positions["geo-table"]["y"]), (chart["x"] + chart["w"], chart["y"]))
         self.assertEqual(TILES["geo-table"]["scope"], "geo_drill")
         table = MODULE.dash["datasources"]["ds-geo-table"]
-        self.assertEqual(table["hierarchy_bindings"], [{"hierarchy_id": "geo"}, {"hierarchy_id": "geo_table"}])
-        self.assertIn("{{ hierarchy_key('geo_table') }}", table["sql"])
-        self.assertIn("{{ hierarchy_rows('geo') }}", table["sql"])
+        self.assertEqual(table["hierarchy_bindings"], [{"hierarchy_id": "geo"}])
+        self.assertIn("{{ hierarchy_key('geo') }}", table["sql"])
         self.assertEqual(TILES["geo-table"]["spec"]["columns"][0]["field"], "LEVEL_LABEL")
         self.assertEqual([(i["trigger"], i["operator"]) for i in tile["interactions"]],
                          [("select", "drill_down"), ("select_hierarchy_level", "drill_up"),

@@ -306,12 +306,6 @@ HIERARCHIES = {"geo": {"label": "Geography", "all_member": {"label": "All region
     {"id": "account", "label": "Account", "key": {"expr": "CUSTOMER_ID", "type": "STRING"},
      "display": "CUSTOMER_NAME", "group_by": ["CUSTOMER_ID", "CUSTOMER_NAME"]}],
     "default_values": [{"depth": 0}]}}
-# The table expands on its own copy of the levels; its rows are also limited by the chart's
-# drill member (hierarchy_rows('geo')), so clicking EMEA narrows the table to EMEA.
-HIERARCHIES["geo_table"] = {
-    "label": "Region, Segment, and Customer", "all_member": {"label": "All regions"},
-    "levels": [dict(level) for level in HIERARCHIES["geo"]["levels"]], "default_values": [{"depth": 0}]}
-HIERARCHIES["geo_table"]["levels"][2]["label"] = "Customer Name"
 GEO_PATHS = ", ".join(f"{expr} AS {name}" for name, expr in DRILL_PATHS)
 GEO_BASE = (
     f"SELECT *, REGION || ' › ' || SEGMENT AS SEGMENT_KEY, {GEO_PATHS} FROM (\n"
@@ -356,14 +350,14 @@ add("geo-drill", {"title": "Hierarchical Chart: Variance by Region, Segment, and
 # re-roots the table at that member.
 geo_table_ds = datasource(
     f"WITH base AS (\n    SELECT * FROM ({GEO_BASE})\n    {where()}\n)\n"
-    "SELECT\n    {{ hierarchy_key('geo_table') }},\n"
+    "SELECT\n    {{ hierarchy_key('geo') }},\n"
     "    ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE, ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n"
     "    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n"
     "    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT\n"
-    "FROM base\nWHERE\n    {{ hierarchy_rows('geo') }}\n    AND {{ hierarchy_rows('geo_table') }}\n"
-    "GROUP BY\n    {{ hierarchy_key('geo_table') }}\nORDER BY VARIANCE",
+    "FROM base\nWHERE\n    {{ hierarchy_rows('geo') }}\n"
+    "GROUP BY\n    {{ hierarchy_key('geo') }}\nORDER BY VARIANCE",
     [("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT_PCT", NUM)])
-geo_table_ds["hierarchy_bindings"] = [{"hierarchy_id": "geo"}, {"hierarchy_id": "geo_table"}]
+geo_table_ds["hierarchy_bindings"] = [{"hierarchy_id": "geo"}]
 add("geo-table", {"title": "Variance by Region, Segment, and Customer (Follows the chart; expand a row to drill down)",
                   "type": "table", "spec": {"columns": [
     {"field": "LEVEL_LABEL", "label": "Region / Segment / Customer Name"},
