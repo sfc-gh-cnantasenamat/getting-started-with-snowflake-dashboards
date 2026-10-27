@@ -3252,6 +3252,11 @@
             "ds-geo-drill-rows"
           ],
           "scope": "geo_drill"
+        },
+        {
+          "tile_id": "hierarchy-help",
+          "type": "text",
+          "text": "## Hierarchical Chart\n\nA hierarchy chart steps through **Region > Segment > Account** in one chart, with each level aggregated by its own query. The account table beside it lists the accounts under whatever the chart is showing.\n\n- **Click a bar** to drill into that member (a region opens its segments, a segment its accounts).\n- **Use the level trail** above the chart (Region, Segment, Account) to go back up or jump to a level.\n- **The filters** at the top of the dashboard still apply at every level."
         }
       ]
     },
@@ -3291,6 +3296,11 @@
           "datasources": [
             "ds-geo-table"
           ]
+        },
+        {
+          "tile_id": "hierarchy-table-help",
+          "type": "text",
+          "text": "## Hierarchical Table\n\nA hierarchy table shows **Region > Segment > Customer Name** as rows that open in place, so you can compare levels side by side without leaving the table.\n\n- **Click the arrow** next to a row to expand it to the next level; click again to collapse it.\n- **Expand several rows** at once to compare segments or customers across regions.\n- **The filters** at the top of the dashboard still apply to every row."
         }
       ]
     },
@@ -3531,15 +3541,21 @@
       "positions": {
         "geo-drill": {
           "x": 0,
-          "y": 0,
+          "y": 3,
           "w": 4,
           "h": 6
         },
         "geo-drill-rows": {
           "x": 4,
-          "y": 0,
+          "y": 3,
           "w": 8,
           "h": 6
+        },
+        "hierarchy-help": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 3
         }
       }
     },
@@ -3548,9 +3564,15 @@
       "positions": {
         "geo-table": {
           "x": 0,
-          "y": 0,
+          "y": 3,
           "w": 12,
           "h": 8
+        },
+        "hierarchy-table-help": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 3
         }
       }
     },
