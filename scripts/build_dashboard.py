@@ -239,7 +239,7 @@ add("actions", {"title": "Try Chart Actions", "type": "text", "text": (
     "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n"
     "- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n"
     "- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n"
-    "- **Click** a bar on the **Hierarchical Filtering** tab to go from region to segment to account; use its level trail to go back up.")}, (7, 0, 5, 2))
+    "- **Click** a bar on the **Hierarchical Chart** tab to go from region to segment to account (or expand rows in its table); use its level trail to go back up.")}, (7, 0, 5, 2))
 
 add("kpi-net-revenue", scorecard("Net Revenue", "USD, vs same period last year"), (0, 2, 3, 2),
     datasource(kpi_sql("{t}.NET"), KPI_COLUMNS))
@@ -306,6 +306,12 @@ HIERARCHIES = {"geo": {"label": "Geography", "all_member": {"label": "All region
     {"id": "account", "label": "Account", "key": {"expr": "CUSTOMER_ID", "type": "STRING"},
      "display": "CUSTOMER_NAME", "group_by": ["CUSTOMER_ID", "CUSTOMER_NAME"]}],
     "default_values": [{"depth": 0}]}}
+# The hierarchy table gets its own copy of the levels so expanding rows there is independent of the
+# chart's drill above it.
+HIERARCHIES["geo_table"] = {
+    "label": "Region, Segment, and Customer", "all_member": {"label": "All regions"},
+    "levels": [dict(level) for level in HIERARCHIES["geo"]["levels"]], "default_values": [{"depth": 0}]}
+HIERARCHIES["geo_table"]["levels"][2]["label"] = "Customer Name"
 GEO_PATHS = ", ".join(f"{expr} AS {name}" for name, expr in DRILL_PATHS)
 GEO_BASE = (
     f"SELECT *, REGION || ' › ' || SEGMENT AS SEGMENT_KEY, {GEO_PATHS} FROM (\n"
@@ -329,7 +335,7 @@ geo_ds = datasource(
     "WHERE\n    {{ hierarchy_rows('geo') }}\nGROUP BY\n    {{ hierarchy_key('geo') }}\nORDER BY VARIANCE",
     [("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT", NUM)])
 geo_ds["hierarchy_bindings"] = [{"hierarchy_id": "geo"}]
-add("geo-drill", {"title": "Hierarchical Filtering: Variance by Region, Segment, and Account (Click a bar to drill in)",
+add("geo-drill", {"title": "Hierarchical Chart: Variance by Region, Segment, and Account (Click a bar to drill in)",
                   "type": "chart", "spec": {
     "mark": {"type": "bar", "cornerRadiusEnd": 3},
     "encoding": {"y": {"field": "LEVEL_LABEL", "type": "nominal", "sort": "x", "title": None,
@@ -364,6 +370,25 @@ add("geo-drill-rows", {"title": "Accounts in the Current Drill Selection (sorted
         [("CUSTOMER_NAME", TXT), ("REGION", TXT), ("SEGMENT", TXT), ("NET_REVENUE", NUM),
          ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT_PCT", NUM)]),
         hierarchy_bindings=[{"hierarchy_id": "geo"}]))
+
+# Hierarchy table: showing LEVEL_LABEL makes each row expand to the next level
+# (Region > Segment > Customer Name), each level aggregated by its own query.
+geo_table_ds = datasource(
+    f"WITH base AS (\n    SELECT * FROM ({GEO_BASE})\n    {where()}\n)\n"
+    "SELECT\n    {{ hierarchy_key('geo_table') }},\n"
+    "    ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE, ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n"
+    "    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n"
+    "    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT\n"
+    "FROM base\nWHERE\n    {{ hierarchy_rows('geo_table') }}\n"
+    "GROUP BY\n    {{ hierarchy_key('geo_table') }}\nORDER BY VARIANCE",
+    [("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT_PCT", NUM)])
+geo_table_ds["hierarchy_bindings"] = [{"hierarchy_id": "geo_table"}]
+add("geo-table", {"title": "Variance by Region, Segment, and Customer (Expand a row to drill down)",
+                  "type": "table", "spec": {"columns": [
+    {"field": "LEVEL_LABEL", "label": "Region / Segment / Customer Name"},
+    {"field": "NET_REVENUE", "label": "Net revenue (USD)"}, {"field": "REVENUE_TARGET", "label": "Target (USD)"},
+    {"field": "VARIANCE", "label": "Variance (USD)"}, {"field": "ATTAINMENT_PCT", "label": "Attainment %"}]}},
+    (0, 32, 12, 7), geo_table_ds)
 
 # Palette fixed on 55-120% attainment: deep misses red, ~88% yellow, beating target teal.
 HEATMAP_SCALE = {"range": PALETTE, "domain": [0.55, 0.7125, 0.875, 1.0375, 1.2], "clamp": True, "interpolate": "rgb"}
@@ -554,9 +579,10 @@ add("source", {"type": "text", "text": (
 
 # Tabs share every filter. The hierarchy chart with its account table, and the full account table,
 # each get their own tab; everything else stays on Overview. Tabs restart their grid at y=0.
-TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Filtering"), ("source", "Data Source")]
-TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "source": "source"}
+TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("source", "Data Source")]
+TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy", "source": "source"}
 layout.update({"geo-drill": {"x": 0, "y": 0, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 0, "w": 8, "h": 6},
+               "geo-table": {"x": 0, "y": 6, "w": 12, "h": 8},
                "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
 
 dash = {

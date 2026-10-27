@@ -18,7 +18,7 @@
           "tile_id": "actions",
           "title": "Try Chart Actions",
           "type": "text",
-          "text": "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n- **Click** a bar on the **Hierarchical Filtering** tab to go from region to segment to account; use its level trail to go back up."
+          "text": "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n- **Click** a bar on the **Hierarchical Chart** tab to go from region to segment to account (or expand rows in its table); use its level trail to go back up."
         },
         {
           "tile_id": "kpi-net-revenue",
@@ -2872,11 +2872,11 @@
     {
       "order": 1,
       "tab_id": "hierarchy",
-      "title": "Hierarchical Filtering",
+      "title": "Hierarchical Chart",
       "tiles": [
         {
           "tile_id": "geo-drill",
-          "title": "Hierarchical Filtering: Variance by Region, Segment, and Account (Click a bar to drill in)",
+          "title": "Hierarchical Chart: Variance by Region, Segment, and Account (Click a bar to drill in)",
           "type": "chart",
           "spec": {
             "layer": [
@@ -3252,6 +3252,38 @@
             "ds-geo-drill-rows"
           ],
           "scope": "geo_drill"
+        },
+        {
+          "tile_id": "geo-table",
+          "title": "Variance by Region, Segment, and Customer (Expand a row to drill down)",
+          "type": "table",
+          "spec": {
+            "columns": [
+              {
+                "field": "LEVEL_LABEL",
+                "label": "Region / Segment / Customer Name"
+              },
+              {
+                "field": "NET_REVENUE",
+                "label": "Net revenue (USD)"
+              },
+              {
+                "field": "REVENUE_TARGET",
+                "label": "Target (USD)"
+              },
+              {
+                "field": "VARIANCE",
+                "label": "Variance (USD)"
+              },
+              {
+                "field": "ATTAINMENT_PCT",
+                "label": "Attainment %"
+              }
+            ]
+          },
+          "datasources": [
+            "ds-geo-table"
+          ]
         }
       ]
     },
@@ -3303,6 +3335,57 @@
         {
           "id": "account",
           "label": "Account",
+          "key": {
+            "expr": "CUSTOMER_ID",
+            "type": "STRING"
+          },
+          "display": "CUSTOMER_NAME",
+          "group_by": [
+            "CUSTOMER_ID",
+            "CUSTOMER_NAME"
+          ]
+        }
+      ],
+      "default_values": [
+        {
+          "depth": 0
+        }
+      ]
+    },
+    "geo_table": {
+      "label": "Region, Segment, and Customer",
+      "all_member": {
+        "label": "All regions"
+      },
+      "levels": [
+        {
+          "id": "region",
+          "label": "Region",
+          "key": {
+            "expr": "REGION",
+            "type": "STRING"
+          },
+          "display": "REGION",
+          "group_by": [
+            "REGION"
+          ]
+        },
+        {
+          "id": "segment",
+          "label": "Segment",
+          "key": {
+            "expr": "SEGMENT_KEY",
+            "type": "STRING"
+          },
+          "display": "SEGMENT",
+          "group_by": [
+            "SEGMENT_KEY",
+            "SEGMENT"
+          ]
+        },
+        {
+          "id": "account",
+          "label": "Customer Name",
           "key": {
             "expr": "CUSTOMER_ID",
             "type": "STRING"
@@ -3501,6 +3584,12 @@
           "y": 0,
           "w": 8,
           "h": 6
+        },
+        "geo-table": {
+          "x": 0,
+          "y": 6,
+          "w": 12,
+          "h": 8
         }
       }
     },
@@ -3897,6 +3986,56 @@
       "hierarchy_bindings": [
         {
           "hierarchy_id": "geo"
+        }
+      ]
+    },
+    "ds-geo-table": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "NET_REVENUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "REVENUE_TARGET",
+          "type": "NUMBER"
+        },
+        {
+          "name": "VARIANCE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "ATTAINMENT_PCT",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "WITH base AS (\n    SELECT * FROM (SELECT *, REGION || ' \u203a ' || SEGMENT AS SEGMENT_KEY, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n        SELECT R.MONTH, R.RECORDED_DRIVER, C.CUSTOMER_ID, C.CUSTOMER_NAME, C.REGION, C.SEGMENT,\n            P.PRODUCT_NAME,\n            (R.GROSS_REVENUE_CENTS - R.DISCOUNT_CENTS - R.REFUND_CENTS) / 100 AS NET_REVENUE,\n            R.TARGET_CENTS / 100 AS REVENUE_TARGET\n        FROM REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY R\n        JOIN REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS C ON R.CUSTOMER_ID = C.CUSTOMER_ID\n        JOIN REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS P ON R.PRODUCT_ID = P.PRODUCT_ID))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n)\nSELECT\n    {{ hierarchy_key('geo_table') }},\n    ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE, ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT\nFROM base\nWHERE\n    {{ hierarchy_rows('geo_table') }}\nGROUP BY\n    {{ hierarchy_key('geo_table') }}\nORDER BY VARIANCE",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
+        }
+      ],
+      "hierarchy_bindings": [
+        {
+          "hierarchy_id": "geo_table"
         }
       ]
     },
