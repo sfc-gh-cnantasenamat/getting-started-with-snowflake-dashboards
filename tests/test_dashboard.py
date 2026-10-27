@@ -132,7 +132,7 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(TAB_OF["geo-drill-rows"], "hierarchy")
         positions = MODULE.dash["layout"]["hierarchy"]["positions"]
         chart = positions["geo-drill"]
-        self.assertEqual(positions["geo-drill-rows"]["y"], chart["y"] + chart["h"])
+        self.assertEqual((positions["geo-drill-rows"]["x"], positions["geo-drill-rows"]["y"]), (chart["x"] + chart["w"], chart["y"]))
         self.assertEqual(TILES["geo-drill-rows"]["scope"], "geo_drill")
         rows = MODULE.dash["datasources"]["ds-geo-drill-rows"]
         self.assertEqual(rows["hierarchy_bindings"], [{"hierarchy_id": "geo"}])

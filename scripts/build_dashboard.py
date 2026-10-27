@@ -514,7 +514,7 @@ add("source", {"type": "text", "text": (
 # each get their own tab; everything else stays on Overview. Tabs restart their grid at y=0.
 TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Filtering"), ("source", "Data Source")]
 TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "source": "source"}
-layout.update({"geo-drill": {"x": 0, "y": 0, "w": 12, "h": 5}, "geo-drill-rows": {"x": 0, "y": 5, "w": 12, "h": 6},
+layout.update({"geo-drill": {"x": 0, "y": 0, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 0, "w": 8, "h": 6},
                "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
 
 dash = {
