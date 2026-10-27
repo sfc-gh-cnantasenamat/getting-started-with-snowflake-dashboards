@@ -46,7 +46,7 @@ def driver_rows(region=None, segment=None):
 
 class DashboardTests(unittest.TestCase):
     def test_generated_file_matches_source(self):
-        stored = json.loads((ROOT / "dashboards/revenue_pulse.dash").read_text())
+        stored = json.loads((ROOT / "dashboards/revenue_pulse_extended.dash").read_text())
         self.assertEqual(stored, MODULE.dash)
 
     def test_variance_palette_matches_live_configuration(self):
@@ -197,5 +197,5 @@ class CompactDashboardTests(unittest.TestCase):
         for tab in compact.dash["tabs"]:
             self.assertEqual(set(compact.dash["layout"][tab["tab_id"]]["positions"]),
                              {t["tile_id"] for t in tab["tiles"]})
-        stored = json.loads((ROOT / "dashboards/revenue_pulse_compact.dash").read_text())
+        stored = json.loads((ROOT / "dashboards/revenue_pulse.dash").read_text())
         self.assertEqual(stored, compact.dash)

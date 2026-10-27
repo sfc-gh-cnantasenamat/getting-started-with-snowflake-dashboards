@@ -1,4 +1,4 @@
-"""Build dashboards/revenue_pulse.dash (native Dashboards 2.0 spec v2)."""
+"""Build dashboards/revenue_pulse_extended.dash (native Dashboards 2.0 spec v2)."""
 
 import json
 from pathlib import Path
@@ -650,7 +650,7 @@ layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 2},
                "source": {"x": 0, "y": 0, "w": 6, "h": 4}})
 
 dash = {
-    "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse",
+    "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse (Extended)",
     "tabs": [{"order": i, "tab_id": tab_id, "title": title, "tiles": [t for t in tiles if TILE_TAB.get(t["tile_id"], "default") == tab_id]}
              for i, (tab_id, title) in enumerate(TABS)],
     "hierarchies": HIERARCHIES,
@@ -685,7 +685,7 @@ for tile in tiles:
         tile["spec"] = native
 
 if __name__ == "__main__":
-    out = ROOT / "dashboards/revenue_pulse.dash"
+    out = ROOT / "dashboards/revenue_pulse_extended.dash"
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(dash, indent=2) + "\n")
     print(f"Wrote {out} with {len(tiles)} tiles and {len(datasources)} datasources")

@@ -36,7 +36,8 @@ sql/03_agent.sql             Revenue Advisor Cortex agent
 sql/04_viewer_role.sql       least-privilege viewer role
 sql/99_cleanup.sql           teardown; never run automatically
 data/                        committed synthetic CSVs and expected_results.json
-dashboards/revenue_pulse.dash  completed example dashboard (reference; build your own draft beside it)
+dashboards/revenue_pulse.dash  completed example dashboard, compact (reference; build your own draft beside it)
+dashboards/revenue_pulse_extended.dash  extended example with how-to tiles on five tabs
 docs/demo-script.md          five-minute presenter walkthrough of the completed dashboard
 ```
 

@@ -1,4 +1,4 @@
-"""Build a compact Revenue Pulse: no explanatory text tiles, two tabs."""
+"""Build dashboards/revenue_pulse.dash: the compact Revenue Pulse: no explanatory text tiles, two tabs."""
 import copy
 import json
 import sys
@@ -25,7 +25,7 @@ LAYOUT = {
 
 tiles = {t["tile_id"]: t for tab in full.dash["tabs"] for t in tab["tiles"]}
 dash = copy.deepcopy({k: v for k, v in full.dash.items() if k not in ("tabs", "layout", "datasources")})
-dash["title"] = "Revenue Pulse (Compact)"
+dash["title"] = "Revenue Pulse"
 dash["tabs"] = [{"order": i, "tab_id": tab_id, "title": title,
                  "tiles": [copy.deepcopy(tiles[t]) for t in LAYOUT[tab_id]]}
                 for i, (tab_id, title) in enumerate(TABS)]
@@ -36,6 +36,6 @@ used = {ds for tab in dash["tabs"] for t in tab["tiles"] for ds in t.get("dataso
 dash["datasources"] = {k: v for k, v in full.datasources.items() if k in used}
 
 if __name__ == "__main__":
-    out = full.ROOT / "dashboards/revenue_pulse_compact.dash"
+    out = full.ROOT / "dashboards/revenue_pulse.dash"
     out.write_text(json.dumps(dash, indent=2) + "\n")
     print(f"Wrote {out} with {sum(len(t['tiles']) for t in dash['tabs'])} tiles")
