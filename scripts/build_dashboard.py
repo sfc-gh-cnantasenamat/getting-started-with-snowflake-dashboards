@@ -235,11 +235,11 @@ add("header", {"type": "text", "text": (
     "Net revenue = gross revenue minus discounts and refunds. Attainment = net revenue / target. "
     "Year-over-year compares the same filtered months one year earlier. Default view: Q3 2026.")}, (0, 0, 7, 2))
 
-add("actions", {"title": "Try Chart Actions", "type": "text", "text": (
-    "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n"
-    "- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n"
-    "- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n"
-    "- **Click** a bar on the **Hierarchical Chart** tab to go from region to segment to account (or expand rows in its table); use its level trail to go back up.")}, (7, 0, 5, 2))
+add("actions", {"title": "Explore the Tabs", "type": "text", "text": (
+    "- **Chart Actions:** drag or click charts to filter the rest of the dashboard.\n"
+    "- **Hierarchical Chart:** click a bar to drill from region to segment to account.\n"
+    "- **Hierarchical Table:** expand rows to compare regions, segments, and customers.\n"
+    "- **Filters** at the top apply on every tab.")}, (7, 0, 5, 2))
 
 add("kpi-net-revenue", scorecard("Net Revenue", "USD, vs same period last year"), (0, 2, 3, 2),
     datasource(kpi_sql("{t}.NET"), KPI_COLUMNS))
@@ -276,7 +276,7 @@ add("trend", {"title": "Monthly Net Revenue vs Target (Drag across months to zoo
                f"FROM ({base()})\n{where(trend_ids)}\nGROUP BY MONTH\nORDER BY MONTH",
                [("MONTH", DATE), ("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM)], trend_ids))
 
-add("by-region", {"title": "Variance to Target by Region (Click a Region to drill the charts below)",
+add("by-region", {"title": "Variance to Target by Region (Click a region to filter the other charts)",
                   "type": "chart", "spec": {
     "mark": {"type": "bar", "cornerRadiusEnd": 3},
     "encoding": {"y": {"field": "DRILL_REGION", "type": "nominal", "sort": "x", "title": None,
@@ -588,12 +588,54 @@ add("hierarchy-table-help", {"type": "text", "text": (
     "- **The filters** at the top of the dashboard still apply to every row.")},
     (0, 0, 12, 3))
 
+add("chart-actions-help", {"type": "text", "text": (
+    "## Chart Actions\n\n"
+    "Chart actions make the charts interactive: drag or click on a source chart and the other tiles "
+    "re-run their queries for your selection. Each source chart below has its instructions on the left. "
+    "Click empty space in a chart, or the **x** on its gray banner, to clear the selection.")},
+    (0, 0, 12, 3))
+add("help-trend", {"type": "text", "text": (
+    "### Drag to pick months\n\n"
+    "- **Drag** across months in **Monthly Net Revenue vs Target** to select a date range.\n"
+    "- Every other tile, on this tab and on Overview, filters to those months.\n"
+    "- The trend keeps showing all 24 months so you can see the range in context.\n"
+    "- Click empty space to clear the range.")}, (0, 0, 4, 4))
+add("help-region", {"type": "text", "text": (
+    "### Click a region to drill\n\n"
+    "- **Click** a region bar in **Variance to Target by Region**.\n"
+    "- The KPIs, trend, heatmap, and the driver, bridge, and account charts below narrow to that region.\n"
+    "- **Cmd-click** (Ctrl-click on Windows) to add more regions.\n"
+    "- Click the bar again to clear it.")}, (0, 0, 4, 4))
+add("help-heatmap", {"type": "text", "text": (
+    "### Click a cell to filter\n\n"
+    "- **Click** a cell in **Target Attainment** to filter by that region and segment together.\n"
+    "- The KPIs, trend, region chart, and the charts below update to match.\n"
+    "- **Cmd-click** to combine several cells.\n"
+    "- Click empty space to clear.")}, (0, 0, 4, 4))
+add("help-targets", {"type": "text", "text": (
+    "### Charts that respond\n\n"
+    "These three charts aren't sources; they follow the selections above.\n\n"
+    "- **Variance by Driver** shows the recorded reasons behind the gap for your selection.\n"
+    "- **Variance Bridge** walks from target to net revenue, one driver at a time.\n"
+    "- **Accounts** plots each account's target against attainment.\n\n"
+    "Try clicking EMEA above and watch all three change.")}, (0, 0, 4, 4))
+
 # Tabs share every filter. The hierarchy chart with its account table, and the full account table,
 # each get their own tab; everything else stays on Overview. Tabs restart their grid at y=0.
-TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table"), ("source", "Data Source")]
-TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy_table", "hierarchy-help": "hierarchy",
+TABS = [("default", "Overview"), ("chart_actions", "Chart Actions"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table"), ("source", "Data Source")]
+TILE_TAB = {**{t: "chart_actions" for t in ("chart-actions-help", "help-trend", "trend", "help-region",
+                                           "by-region", "help-heatmap", "heatmap", "help-targets",
+                                           "drivers", "waterfall", "bubble")},
+            "geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy_table", "hierarchy-help": "hierarchy",
             "hierarchy-table-help": "hierarchy_table", "source": "source"}
-layout.update({"hierarchy-help": {"x": 0, "y": 0, "w": 12, "h": 3},
+layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 3},
+               "help-trend": {"x": 0, "y": 3, "w": 4, "h": 4}, "trend": {"x": 4, "y": 3, "w": 8, "h": 4},
+               "help-region": {"x": 0, "y": 7, "w": 4, "h": 4}, "by-region": {"x": 4, "y": 7, "w": 8, "h": 4},
+               "help-heatmap": {"x": 0, "y": 11, "w": 4, "h": 4}, "heatmap": {"x": 4, "y": 11, "w": 8, "h": 4},
+               "help-targets": {"x": 0, "y": 15, "w": 4, "h": 13}, "drivers": {"x": 4, "y": 15, "w": 8, "h": 4},
+               "waterfall": {"x": 4, "y": 19, "w": 8, "h": 4}, "bubble": {"x": 4, "y": 23, "w": 8, "h": 5},
+               "ask": {"x": 0, "y": 5, "w": 12, "h": 4},
+               "hierarchy-help": {"x": 0, "y": 0, "w": 12, "h": 3},
                "geo-drill": {"x": 0, "y": 3, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 3, "w": 8, "h": 6},
                "hierarchy-table-help": {"x": 0, "y": 0, "w": 12, "h": 3},
                "geo-table": {"x": 0, "y": 3, "w": 12, "h": 8},

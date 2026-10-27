@@ -16,9 +16,9 @@
         },
         {
           "tile_id": "actions",
-          "title": "Try Chart Actions",
+          "title": "Explore the Tabs",
           "type": "text",
-          "text": "- **Drag** across months in **Monthly Net Revenue** to zoom and filter every tile.\n- **Click** a region bar in **Variance to Target by Region** to drill into segments, then accounts.\n- **Click** a cell in **Target Attainment** to filter the dashboard by that region and segment.\n- **Click** a bar on the **Hierarchical Chart** tab to go from region to segment to account (or expand rows in its table); use its level trail to go back up."
+          "text": "- **Chart Actions:** drag or click charts to filter the rest of the dashboard.\n- **Hierarchical Chart:** click a bar to drill from region to segment to account.\n- **Hierarchical Table:** expand rows to compare regions, segments, and customers.\n- **Filters** at the top apply on every tab."
         },
         {
           "tile_id": "kpi-net-revenue",
@@ -1664,6 +1664,18 @@
           "scope": "main"
         },
         {
+          "tile_id": "ask",
+          "type": "text",
+          "text": "### Ask Revenue Advisor\nOnce published to CoWork, use the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
+        }
+      ]
+    },
+    {
+      "order": 1,
+      "tab_id": "chart_actions",
+      "title": "Chart Actions",
+      "tiles": [
+        {
           "tile_id": "trend",
           "title": "Monthly Net Revenue vs Target (Drag across months to zoom and filter)",
           "type": "chart",
@@ -1790,7 +1802,7 @@
         },
         {
           "tile_id": "by-region",
-          "title": "Variance to Target by Region (Click a Region to drill the charts below)",
+          "title": "Variance to Target by Region (Click a region to filter the other charts)",
           "type": "chart",
           "spec": {
             "layer": [
@@ -2863,14 +2875,34 @@
           "scope": "detail"
         },
         {
-          "tile_id": "ask",
+          "tile_id": "chart-actions-help",
           "type": "text",
-          "text": "### Ask Revenue Advisor\nOnce published to CoWork, use the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
+          "text": "## Chart Actions\n\nChart actions make the charts interactive: drag or click on a source chart and the other tiles re-run their queries for your selection. Each source chart below has its instructions on the left. Click empty space in a chart, or the **x** on its gray banner, to clear the selection."
+        },
+        {
+          "tile_id": "help-trend",
+          "type": "text",
+          "text": "### Drag to pick months\n\n- **Drag** across months in **Monthly Net Revenue vs Target** to select a date range.\n- Every other tile, on this tab and on Overview, filters to those months.\n- The trend keeps showing all 24 months so you can see the range in context.\n- Click empty space to clear the range."
+        },
+        {
+          "tile_id": "help-region",
+          "type": "text",
+          "text": "### Click a region to drill\n\n- **Click** a region bar in **Variance to Target by Region**.\n- The KPIs, trend, heatmap, and the driver, bridge, and account charts below narrow to that region.\n- **Cmd-click** (Ctrl-click on Windows) to add more regions.\n- Click the bar again to clear it."
+        },
+        {
+          "tile_id": "help-heatmap",
+          "type": "text",
+          "text": "### Click a cell to filter\n\n- **Click** a cell in **Target Attainment** to filter by that region and segment together.\n- The KPIs, trend, region chart, and the charts below update to match.\n- **Cmd-click** to combine several cells.\n- Click empty space to clear."
+        },
+        {
+          "tile_id": "help-targets",
+          "type": "text",
+          "text": "### Charts that respond\n\nThese three charts aren't sources; they follow the selections above.\n\n- **Variance by Driver** shows the recorded reasons behind the gap for your selection.\n- **Variance Bridge** walks from target to net revenue, one driver at a time.\n- **Accounts** plots each account's target against attainment.\n\nTry clicking EMEA above and watch all three change."
         }
       ]
     },
     {
-      "order": 1,
+      "order": 2,
       "tab_id": "hierarchy",
       "title": "Hierarchical Chart",
       "tiles": [
@@ -3261,7 +3293,7 @@
       ]
     },
     {
-      "order": 2,
+      "order": 3,
       "tab_id": "hierarchy_table",
       "title": "Hierarchical Table",
       "tiles": [
@@ -3305,7 +3337,7 @@
       ]
     },
     {
-      "order": 3,
+      "order": 4,
       "tab_id": "source",
       "title": "Data Source",
       "tiles": [
@@ -3492,47 +3524,82 @@
           "w": 3,
           "h": 2
         },
-        "trend": {
+        "ask": {
           "x": 0,
           "y": 5,
           "w": 12,
           "h": 4
+        }
+      }
+    },
+    "chart_actions": {
+      "meta": {},
+      "positions": {
+        "trend": {
+          "x": 4,
+          "y": 3,
+          "w": 8,
+          "h": 4
         },
         "by-region": {
-          "x": 0,
-          "y": 9,
-          "w": 6,
+          "x": 4,
+          "y": 7,
+          "w": 8,
           "h": 4
         },
         "heatmap": {
-          "x": 6,
-          "y": 9,
-          "w": 6,
+          "x": 4,
+          "y": 11,
+          "w": 8,
           "h": 4
         },
         "drivers": {
-          "x": 0,
-          "y": 13,
-          "w": 6,
+          "x": 4,
+          "y": 15,
+          "w": 8,
           "h": 4
         },
         "waterfall": {
-          "x": 6,
-          "y": 13,
-          "w": 6,
+          "x": 4,
+          "y": 19,
+          "w": 8,
           "h": 4
         },
         "bubble": {
-          "x": 0,
-          "y": 17,
+          "x": 4,
+          "y": 23,
           "w": 8,
           "h": 5
         },
-        "ask": {
-          "x": 8,
-          "y": 17,
+        "chart-actions-help": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 3
+        },
+        "help-trend": {
+          "x": 0,
+          "y": 3,
           "w": 4,
-          "h": 5
+          "h": 4
+        },
+        "help-region": {
+          "x": 0,
+          "y": 7,
+          "w": 4,
+          "h": 4
+        },
+        "help-heatmap": {
+          "x": 0,
+          "y": 11,
+          "w": 4,
+          "h": 4
+        },
+        "help-targets": {
+          "x": 0,
+          "y": 15,
+          "w": 4,
+          "h": 13
         }
       }
     },
