@@ -3252,10 +3252,17 @@
             "ds-geo-drill-rows"
           ],
           "scope": "geo_drill"
-        },
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "tab_id": "hierarchy_table",
+      "title": "Hierarchical Table",
+      "tiles": [
         {
           "tile_id": "geo-table",
-          "title": "Variance by Region, Segment, and Customer (Follows the chart; expand a row to drill down)",
+          "title": "Variance by Region, Segment, and Customer (Expand a row to drill down)",
           "type": "table",
           "spec": {
             "columns": [
@@ -3283,13 +3290,12 @@
           },
           "datasources": [
             "ds-geo-table"
-          ],
-          "scope": "geo_drill"
+          ]
         }
       ]
     },
     {
-      "order": 2,
+      "order": 3,
       "tab_id": "source",
       "title": "Data Source",
       "tiles": [
@@ -3534,10 +3540,15 @@
           "y": 0,
           "w": 8,
           "h": 6
-        },
+        }
+      }
+    },
+    "hierarchy_table": {
+      "meta": {},
+      "positions": {
         "geo-table": {
           "x": 0,
-          "y": 6,
+          "y": 0,
           "w": 12,
           "h": 8
         }

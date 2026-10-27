@@ -61,7 +61,7 @@ class DashboardTests(unittest.TestCase):
     def test_actions_panel_and_layout(self):
         self.assertEqual(len(TILES), 17)
         self.assertEqual([(t["tab_id"], t["title"]) for t in MODULE.dash["tabs"]],
-                         [("default", "Overview"), ("hierarchy", "Hierarchical Chart"),
+                         [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table"),
                           ("source", "Data Source")])
         for tab in MODULE.dash["tabs"]:
             self.assertEqual(set(MODULE.dash["layout"][tab["tab_id"]]["positions"]),

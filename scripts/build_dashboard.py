@@ -366,8 +366,7 @@ add("geo-drill-rows", {"title": "Accounts in the Current Drill Selection (sorted
         hierarchy_bindings=[{"hierarchy_id": "geo"}]))
 
 # Hierarchy table: showing LEVEL_LABEL makes each row expand to the next level
-# (Region > Segment > Customer Name). It shares the chart's hierarchy and scope, so clicking a bar
-# re-roots the table at that member.
+# (Region > Segment > Customer Name). It sits on its own tab and expands independently.
 geo_table_ds = datasource(
     f"WITH base AS (\n    SELECT * FROM ({GEO_BASE})\n    {where()}\n)\n"
     "SELECT\n    {{ hierarchy_key('geo') }},\n"
@@ -378,7 +377,7 @@ geo_table_ds = datasource(
     "GROUP BY\n    {{ hierarchy_key('geo') }}\nORDER BY VARIANCE",
     [("NET_REVENUE", NUM), ("REVENUE_TARGET", NUM), ("VARIANCE", NUM), ("ATTAINMENT_PCT", NUM)])
 geo_table_ds["hierarchy_bindings"] = [{"hierarchy_id": "geo"}]
-add("geo-table", {"title": "Variance by Region, Segment, and Customer (Follows the chart; expand a row to drill down)",
+add("geo-table", {"title": "Variance by Region, Segment, and Customer (Expand a row to drill down)",
                   "type": "table", "spec": {"columns": [
     {"field": "LEVEL_LABEL", "label": "Region / Segment / Customer Name"},
     {"field": "NET_REVENUE", "label": "Net revenue (USD)"}, {"field": "REVENUE_TARGET", "label": "Target (USD)"},
@@ -530,7 +529,7 @@ SCOPES = {"main": {}, "detail": {"parent": "main"}, "heat": {}, "region": {}, "g
 TILE_SCOPE = {t: "main" for t in ("kpi-net-revenue", "kpi-attainment", "kpi-variance", "kpi-margin",
                                   "trend", "waterfall")}
 TILE_SCOPE.update({t: "detail" for t in ("drivers", "bubble")})
-TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill", "geo-drill-rows": "geo_drill", "geo-table": "geo_drill"})
+TILE_SCOPE.update({"heatmap": "heat", "by-region": "region", "geo-drill": "geo_drill", "geo-drill-rows": "geo_drill"})
 
 
 def set_filter(scopes, *fields):
@@ -574,10 +573,10 @@ add("source", {"type": "text", "text": (
 
 # Tabs share every filter. The hierarchy chart with its account table, and the full account table,
 # each get their own tab; everything else stays on Overview. Tabs restart their grid at y=0.
-TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("source", "Data Source")]
-TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy", "source": "source"}
+TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("hierarchy_table", "Hierarchical Table"), ("source", "Data Source")]
+TILE_TAB = {"geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy_table", "source": "source"}
 layout.update({"geo-drill": {"x": 0, "y": 0, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 0, "w": 8, "h": 6},
-               "geo-table": {"x": 0, "y": 6, "w": 12, "h": 8},
+               "geo-table": {"x": 0, "y": 0, "w": 12, "h": 8},
                "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
 
 dash = {
