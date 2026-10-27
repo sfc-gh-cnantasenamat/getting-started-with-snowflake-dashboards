@@ -11,13 +11,13 @@ TABS = [("default", "Overview"), ("hierarchy", "Hierarchical Chart"), ("hierarch
         ("source", "Data Source")]
 LAYOUT = {
     "default": {
-        "header": (0, 0, 12, 3),
-        "kpi-net-revenue": (0, 3, 3, 2), "kpi-attainment": (3, 3, 3, 2),
-        "kpi-variance": (6, 3, 3, 2), "kpi-margin": (9, 3, 3, 2),
-        "trend": (0, 5, 12, 4),
-        "by-region": (0, 9, 6, 4), "heatmap": (6, 9, 6, 4),
-        "drivers": (0, 13, 6, 4), "waterfall": (6, 13, 6, 4),
-        "bubble": (0, 17, 12, 5),
+        "header": (0, 0, 12, 2),
+        "kpi-net-revenue": (0, 2, 3, 2), "kpi-attainment": (3, 2, 3, 2),
+        "kpi-variance": (6, 2, 3, 2), "kpi-margin": (9, 2, 3, 2),
+        "trend": (0, 4, 12, 4),
+        "by-region": (0, 8, 6, 4), "heatmap": (6, 8, 6, 4),
+        "drivers": (0, 12, 6, 4), "waterfall": (6, 12, 6, 4),
+        "bubble": (0, 16, 12, 5),
     },
     "hierarchy": {"geo-drill": (0, 0, 4, 6), "geo-drill-rows": (4, 0, 8, 6)},
     "hierarchy_table": {"geo-table": (0, 0, 12, 8)},
