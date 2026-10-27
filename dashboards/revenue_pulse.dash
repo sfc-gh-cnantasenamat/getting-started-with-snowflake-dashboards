@@ -16,9 +16,8 @@
         },
         {
           "tile_id": "actions",
-          "title": "Explore the Tabs",
           "type": "text",
-          "text": "- **Chart Actions:** drag or click charts to filter the rest of the dashboard.\n- **Hierarchical Chart:** click a bar to drill from region to segment to account.\n- **Hierarchical Table:** expand rows to compare regions, segments, and customers.\n- **Filters** at the top apply on every tab."
+          "text": "### Explore the Tabs\n- **Chart Actions:** drag or click charts to filter the rest of the dashboard.\n- **Hierarchical Chart:** click a bar to drill from region to segment to account.\n- **Hierarchical Table:** expand rows to compare regions, segments, and customers.\n- **Filters** at the top apply on every tab."
         },
         {
           "tile_id": "kpi-net-revenue",
@@ -3491,44 +3490,44 @@
         "header": {
           "x": 0,
           "y": 0,
-          "w": 7,
-          "h": 3
+          "w": 4,
+          "h": 5
         },
         "actions": {
-          "x": 7,
+          "x": 4,
           "y": 0,
-          "w": 5,
-          "h": 3
+          "w": 4,
+          "h": 5
         },
         "kpi-net-revenue": {
           "x": 0,
-          "y": 3,
+          "y": 5,
           "w": 3,
           "h": 2
         },
         "kpi-attainment": {
           "x": 3,
-          "y": 3,
+          "y": 5,
           "w": 3,
           "h": 2
         },
         "kpi-variance": {
           "x": 6,
-          "y": 3,
+          "y": 5,
           "w": 3,
           "h": 2
         },
         "kpi-margin": {
           "x": 9,
-          "y": 3,
+          "y": 5,
           "w": 3,
           "h": 2
         },
         "ask": {
-          "x": 0,
-          "y": 5,
-          "w": 12,
-          "h": 4
+          "x": 8,
+          "y": 0,
+          "w": 4,
+          "h": 5
         }
       }
     },

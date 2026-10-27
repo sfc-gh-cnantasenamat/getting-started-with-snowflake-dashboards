@@ -66,10 +66,10 @@ class DashboardTests(unittest.TestCase):
         for tab in MODULE.dash["tabs"]:
             self.assertEqual(set(MODULE.dash["layout"][tab["tab_id"]]["positions"]),
                              {t["tile_id"] for t in tab["tiles"]})
-        self.assertEqual(TILES["actions"]["title"], "Explore the Tabs")
+        self.assertTrue(TILES["actions"]["text"].startswith("### Explore the Tabs"))
         positions = MODULE.dash["layout"]["default"]["positions"]
-        self.assertEqual(positions["header"], {"x": 0, "y": 0, "w": 7, "h": 3})
-        self.assertEqual(positions["actions"], {"x": 7, "y": 0, "w": 5, "h": 3})
+        self.assertEqual(positions["header"], {"x": 0, "y": 0, "w": 4, "h": 5})
+        self.assertEqual(positions["actions"], {"x": 4, "y": 0, "w": 4, "h": 5})
 
     def test_native_specs_preserved(self):
         for name in ("drivers", "kpi-net-revenue", "kpi-variance"):

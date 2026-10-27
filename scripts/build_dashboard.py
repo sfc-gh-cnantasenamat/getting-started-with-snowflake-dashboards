@@ -235,7 +235,8 @@ add("header", {"type": "text", "text": (
     "Net revenue = gross revenue minus discounts and refunds. Attainment = net revenue / target. "
     "Year-over-year compares the same filtered months one year earlier. Default view: Q3 2026.")}, (0, 0, 7, 2))
 
-add("actions", {"title": "Explore the Tabs", "type": "text", "text": (
+add("actions", {"type": "text", "text": (
+    "### Explore the Tabs\n"
     "- **Chart Actions:** drag or click charts to filter the rest of the dashboard.\n"
     "- **Hierarchical Chart:** click a bar to drill from region to segment to account.\n"
     "- **Hierarchical Table:** expand rows to compare regions, segments, and customers.\n"
@@ -634,7 +635,10 @@ layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 3},
                "help-heatmap": {"x": 0, "y": 11, "w": 4, "h": 4}, "heatmap": {"x": 4, "y": 11, "w": 8, "h": 4},
                "help-targets": {"x": 0, "y": 15, "w": 4, "h": 13}, "drivers": {"x": 4, "y": 15, "w": 8, "h": 4},
                "waterfall": {"x": 4, "y": 19, "w": 8, "h": 4}, "bubble": {"x": 4, "y": 23, "w": 8, "h": 5},
-               "ask": {"x": 0, "y": 5, "w": 12, "h": 4},
+               "header": {"x": 0, "y": 0, "w": 4, "h": 5}, "actions": {"x": 4, "y": 0, "w": 4, "h": 5},
+               "ask": {"x": 8, "y": 0, "w": 4, "h": 5},
+               **{k: {"x": x, "y": 5, "w": 3, "h": 2} for k, x in (("kpi-net-revenue", 0), ("kpi-attainment", 3),
+                                                                  ("kpi-variance", 6), ("kpi-margin", 9))},
                "hierarchy-help": {"x": 0, "y": 0, "w": 12, "h": 3},
                "geo-drill": {"x": 0, "y": 3, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 3, "w": 8, "h": 6},
                "hierarchy-table-help": {"x": 0, "y": 0, "w": 12, "h": 3},
