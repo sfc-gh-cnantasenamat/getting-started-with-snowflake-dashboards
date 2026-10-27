@@ -632,22 +632,22 @@ TILE_TAB = {**{t: "chart_actions" for t in ("chart-actions-help", "help-trend", 
                                            "by-region", "help-heatmap", "heatmap", "help-targets",
                                            "drivers", "waterfall", "bubble")},
             "geo-drill": "hierarchy", "geo-drill-rows": "hierarchy", "geo-table": "hierarchy_table", "hierarchy-help": "hierarchy", "hierarchy-help-steps": "hierarchy",
-            "hierarchy-table-help": "hierarchy_table", "hierarchy-table-help-steps": "hierarchy_table", "source": "source"}
+            "hierarchy-table-help": "hierarchy_table", "hierarchy-table-help-steps": "hierarchy_table", "source": "source", "ask": "source"}
 layout.update({"chart-actions-help": {"x": 0, "y": 0, "w": 12, "h": 2},
                "help-trend": {"x": 0, "y": 2, "w": 4, "h": 4}, "trend": {"x": 4, "y": 2, "w": 8, "h": 4},
                "help-region": {"x": 0, "y": 6, "w": 6, "h": 3}, "by-region": {"x": 0, "y": 9, "w": 6, "h": 4},
                "help-heatmap": {"x": 6, "y": 6, "w": 6, "h": 3}, "heatmap": {"x": 6, "y": 9, "w": 6, "h": 4},
                "help-targets": {"x": 0, "y": 13, "w": 12, "h": 3}, "drivers": {"x": 0, "y": 16, "w": 6, "h": 4},
                "waterfall": {"x": 6, "y": 16, "w": 6, "h": 4}, "bubble": {"x": 0, "y": 20, "w": 12, "h": 5},
-               "header": {"x": 0, "y": 0, "w": 4, "h": 4}, "actions": {"x": 4, "y": 0, "w": 4, "h": 4},
-               "ask": {"x": 8, "y": 0, "w": 4, "h": 4},
+               "header": {"x": 0, "y": 0, "w": 6, "h": 4}, "actions": {"x": 6, "y": 0, "w": 6, "h": 4},
+               "ask": {"x": 6, "y": 0, "w": 6, "h": 4},
                **{k: {"x": x, "y": 4, "w": 3, "h": 2} for k, x in (("kpi-net-revenue", 0), ("kpi-attainment", 3),
                                                                   ("kpi-variance", 6), ("kpi-margin", 9))},
                "hierarchy-help": {"x": 0, "y": 0, "w": 6, "h": 2}, "hierarchy-help-steps": {"x": 6, "y": 0, "w": 6, "h": 2},
                "geo-drill": {"x": 0, "y": 2, "w": 4, "h": 6}, "geo-drill-rows": {"x": 4, "y": 2, "w": 8, "h": 6},
                "hierarchy-table-help": {"x": 0, "y": 0, "w": 6, "h": 2}, "hierarchy-table-help-steps": {"x": 6, "y": 0, "w": 6, "h": 2},
                "geo-table": {"x": 0, "y": 2, "w": 12, "h": 8},
-               "source": {"x": 0, "y": 0, "w": 12, "h": 4}})
+               "source": {"x": 0, "y": 0, "w": 6, "h": 4}})
 
 dash = {
     "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse",
