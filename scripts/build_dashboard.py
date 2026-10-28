@@ -1,4 +1,4 @@
-"""Build dashboards/revenue_pulse_extended.dash (native Dashboards 2.0 spec v2)."""
+"""Build dashboards/revenue_pulse_extended.dash (native Snowflake Dashboards spec v2)."""
 
 import json
 from pathlib import Path

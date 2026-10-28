@@ -1,6 +1,6 @@
-# Getting Started with Snowflake Dashboards 2.0
+# Getting Started with Snowflake Dashboards
 
-Companion code for the Snowflake developer guide *Getting Started with Snowflake Dashboards 2.0*. You use Cortex Code prompts to build, refine, and check a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
+Companion code for the Snowflake developer guide *Getting Started with Snowflake Dashboards*. You use Cortex Code prompts to build, refine, and check a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
 
 Everything runs in Snowsight. You don't need Python, a CLI, or a local clone.
 

@@ -7,7 +7,7 @@ CREATE DATABASE IF NOT EXISTS REVENUE_PULSE_DB
   COMMENT = 'Revenue Pulse developer guide (synthetic data). Safe to drop after the guide.';
 
 CREATE SCHEMA IF NOT EXISTS REVENUE_PULSE_DB.DASHBOARD_DEMO
-  COMMENT = 'Revenue Pulse Dashboards 2.0 demo (synthetic data)';
+  COMMENT = 'Revenue Pulse Snowflake Dashboards demo (synthetic data)';
 
 CREATE API INTEGRATION IF NOT EXISTS REVENUE_PULSE_GIT_API
   API_PROVIDER = git_https_api
