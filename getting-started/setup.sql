@@ -1,8 +1,10 @@
--- Revenue Pulse: one-shot setup for the Snowflake Dashboards quickstart.
--- Paste this whole file into a Snowsight SQL file and select Run All.
+-- Revenue Pulse: one-shot setup for Getting Started with Snowflake Dashboards.
+-- Upload this file to a Snowsight workspace and select Run All.
 -- It creates REVENUE_PULSE_DB with three tables of synthetic revenue data and a semantic
 -- view. No stages, Git integrations, or external files are needed.
--- Rerunning is safe: tables are replaced. Teardown: DROP DATABASE REVENUE_PULSE_DB;
+-- Role: any role with CREATE DATABASE on the account (SYSADMIN has it), plus
+-- USAGE on a warehouse. That role owns everything this script creates.
+-- Rerunning is safe: tables are replaced. Teardown: run cleanup.sql.
 
 CREATE DATABASE IF NOT EXISTS REVENUE_PULSE_DB
   COMMENT = 'Revenue Pulse quickstart (synthetic data). Safe to drop.';

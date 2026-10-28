@@ -2,7 +2,7 @@
 
 Companion code for both Snowflake Dashboards developer guides:
 
-- **Part 1, *Getting Started with Snowflake Dashboards*:** run [`sql/quick_setup.sql`](sql/quick_setup.sql), upload [`dashboards/revenue_pulse.dash`](dashboards/revenue_pulse.dash), and explore a working dashboard in about a minute. See [Part 1 quick start](#part-1-quick-start).
+- **Part 1, *Getting Started with Snowflake Dashboards*:** everything is in [`getting-started/`](getting-started/). Run `setup.sql`, upload `revenue_pulse.dash`, and explore a working dashboard in about a minute. See [Part 1 quick start](#part-1-quick-start).
 - **Part 2, *Build Snowflake Dashboards with CoCo*:** build the same dashboard from scratch. The rest of this README covers Part 2.
 
 In Part 2 you use Cortex Code prompts to build, refine, and check a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
@@ -13,11 +13,12 @@ The guide holds the walkthrough: the Cortex Code prompts, the expected output an
 
 ## Part 1 quick start
 
-1. In Snowsight, open **Projects » Workspaces**. In **My Workspace**, select **+ Add New » Upload Files** and upload `sql/quick_setup.sql`.
-2. Open it, pick a role that can create a database and a warehouse, and select **Run All**. It finishes in about 10 seconds and returns 54 customers, 3 products, and 3,888 revenue rows.
-3. Upload `dashboards/revenue_pulse.dash` the same way and open it.
+1. In Snowsight, open **Projects » Workspaces**. In **My Workspace**, select **+ Add New » Upload Files** and upload [`getting-started/setup.sql`](getting-started/setup.sql).
+2. Open it, pick a role with `CREATE DATABASE` on the account (for example `SYSADMIN`) and a warehouse you can use, and select **Run All**. It finishes in about 10 seconds and returns 54 customers, 3 products, and 3,888 revenue rows.
+3. Upload [`getting-started/revenue_pulse.dash`](getting-started/revenue_pulse.dash) the same way and open it.
+4. To clean up, run [`getting-started/cleanup.sql`](getting-started/cleanup.sql) with the same role. It drops `REVENUE_PULSE_DB`.
 
-`quick_setup.sql` is self-contained: it inlines the data from `data/` and the semantic view from `sql/02_semantic_view.sql`, with no stage or Git integration. It creates the same `REVENUE_PULSE_DB.DASHBOARD_DEMO` objects as `00`–`02`, so you can continue into Part 2 afterwards.
+`setup.sql` is self-contained: it inlines the data from `data/` and the semantic view from `sql/02_semantic_view.sql`, with no stage or Git integration. It creates the same `REVENUE_PULSE_DB.DASHBOARD_DEMO` objects as `00`–`02`, so you can continue into Part 2 afterwards. `getting-started/revenue_pulse.dash` is an identical copy of `dashboards/revenue_pulse.dash`.
 
 ## Part 2: Run
 
@@ -48,14 +49,14 @@ sql/02_semantic_view.sql     semantic view
 sql/03_agent.sql             Revenue Advisor Cortex agent
 sql/04_viewer_role.sql       least-privilege viewer role
 sql/99_cleanup.sql           teardown; never run automatically
-sql/quick_setup.sql          Part 1 one-shot setup (tables, data, semantic view); generated
+getting-started/             Part 1: setup.sql (generated), revenue_pulse.dash (copy), cleanup.sql
 data/                        committed synthetic CSVs and expected_results.json
 dashboards/revenue_pulse.dash  completed example dashboard, compact (reference; build your own draft beside it)
 dashboards/revenue_pulse_extended.dash  extended example with how-to tiles on five tabs
 docs/demo-script.md          five-minute presenter walkthrough of the completed dashboard
 ```
 
-Maintainer only (not needed to follow the guide): `scripts/generate_data.py` and `scripts/build_dashboard.py` regenerate `data/` and `dashboards/`, and `scripts/build_quick_setup.py` regenerates `sql/quick_setup.sql` from `data/` and `sql/02_semantic_view.sql` (rerun it after changing either). Both `data/` and `dashboards/` from `config/demo.json`, and `tests/test_data.py` tests the generator.
+Maintainer only (not needed to follow the guide): `scripts/generate_data.py` and `scripts/build_dashboard.py` regenerate `data/` and `dashboards/`, and `scripts/build_getting_started.py` regenerates `getting-started/setup.sql` from `data/` and `sql/02_semantic_view.sql` (rerun it after changing either), and `scripts/build_compact.py` writes both copies of `revenue_pulse.dash`. Both `data/` and `dashboards/` from `config/demo.json`, and `tests/test_data.py` tests the generator.
 
 ### Local visual checks
 

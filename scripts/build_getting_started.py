@@ -1,11 +1,11 @@
-"""Build sql/quick_setup.sql (one-shot setup for Part 1) from the committed data and semantic view."""
+"""Build getting-started/setup.sql (one-shot setup for Part 1) from the committed data and semantic view."""
 import csv
 import os
 import sys
 
 C = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FQ = sys.argv[1] if len(sys.argv) > 1 else 'REVENUE_PULSE_DB.DASHBOARD_DEMO'
-OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(C, 'sql', 'quick_setup.sql')
+OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(C, 'getting-started', 'setup.sql')
 
 
 def q(s):
@@ -21,11 +21,13 @@ drivers = sorted({r['recorded_driver'] for r in rev})
 dcode = {d: i for i, d in enumerate(drivers)}
 db = FQ.split('.')[0]
 
-head = f"""-- Revenue Pulse: one-shot setup for the Snowflake Dashboards quickstart.
--- Paste this whole file into a Snowsight SQL file and select Run All.
+head = f"""-- Revenue Pulse: one-shot setup for Getting Started with Snowflake Dashboards.
+-- Upload this file to a Snowsight workspace and select Run All.
 -- It creates {db} with three tables of synthetic revenue data and a semantic
 -- view. No stages, Git integrations, or external files are needed.
--- Rerunning is safe: tables are replaced. Teardown: DROP DATABASE {db};
+-- Role: any role with CREATE DATABASE on the account (SYSADMIN has it), plus
+-- USAGE on a warehouse. That role owns everything this script creates.
+-- Rerunning is safe: tables are replaced. Teardown: run cleanup.sql.
 
 CREATE DATABASE IF NOT EXISTS {db}
   COMMENT = 'Revenue Pulse quickstart (synthetic data). Safe to drop.';

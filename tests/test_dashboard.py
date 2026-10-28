@@ -199,3 +199,23 @@ class CompactDashboardTests(unittest.TestCase):
                              {t["tile_id"] for t in tab["tiles"]})
         stored = json.loads((ROOT / "dashboards/revenue_pulse.dash").read_text())
         self.assertEqual(stored, compact.dash)
+
+
+class GettingStartedTests(unittest.TestCase):
+    def test_dash_copy_matches_reference(self):
+        self.assertEqual((ROOT / "getting-started/revenue_pulse.dash").read_bytes(),
+                         (ROOT / "dashboards/revenue_pulse.dash").read_bytes())
+
+    def test_setup_is_current(self):
+        import subprocess, sys, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "setup.sql"
+            subprocess.run([sys.executable, str(ROOT / "scripts/build_getting_started.py"),
+                            "REVENUE_PULSE_DB.DASHBOARD_DEMO", str(out)], check=True,
+                           capture_output=True)
+            self.assertEqual(out.read_text(), (ROOT / "getting-started/setup.sql").read_text())
+
+    def test_cleanup_drops_setup_database(self):
+        stmts = [l for l in (ROOT / "getting-started/cleanup.sql").read_text().splitlines()
+                 if l.strip() and not l.startswith("--")]
+        self.assertEqual(stmts, ["DROP DATABASE IF EXISTS REVENUE_PULSE_DB;"])
