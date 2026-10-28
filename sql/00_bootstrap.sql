@@ -17,7 +17,7 @@ CREATE API INTEGRATION IF NOT EXISTS REVENUE_PULSE_GIT_API
 
 CREATE GIT REPOSITORY IF NOT EXISTS REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO
   API_INTEGRATION = REVENUE_PULSE_GIT_API
-  ORIGIN = 'https://github.com/sfc-gh-cnantasenamat/getting-started-with-snowflake-dashboards-2-0.git';
+  ORIGIN = 'https://github.com/sfc-gh-cnantasenamat/getting-started-with-snowflake-dashboards.git';
 
 ALTER GIT REPOSITORY REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO FETCH;
 
