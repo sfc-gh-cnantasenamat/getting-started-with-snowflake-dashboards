@@ -1,29 +1,30 @@
--- Revenue Pulse: one-shot setup for Getting Started with Snowflake Dashboards.
--- Upload this file to a Snowsight workspace and select Run All.
--- It creates REVENUE_PULSE_DB with three tables of synthetic revenue data and a semantic
--- view. No stages, Git integrations, or external files are needed.
--- Role: any role with CREATE DATABASE on the account (SYSADMIN has it), plus
--- USAGE on a warehouse. That role owns everything this script creates.
--- Rerunning is safe: tables are replaced. Teardown: run cleanup.sql.
+-- Revenue Pulse: setup for Getting Started with Snowflake Dashboards.
+-- Creates three tables of synthetic revenue data and a semantic view in an
+-- existing schema, TEMP.CNANTASENAMAT. No new database, stages, or Git integrations.
+-- To use another schema, find-and-replace TEMP.CNANTASENAMAT with your DATABASE.SCHEMA in
+-- this file, revenue_pulse.dash, and cleanup.sql before uploading them.
+-- Role: any role with USAGE on the database, a warehouse, and on the schema
+-- CREATE TABLE and CREATE SEMANTIC VIEW (the schema's owner has all of these).
+-- No ACCOUNTADMIN or SYSADMIN needed. Upload to a workspace and select Run All.
+-- Rerunning is safe: objects are replaced and keep their grants.
+-- Note: this replaces any existing CUSTOMERS, PRODUCTS, REVENUE_MONTHLY, or
+-- REVENUE_SEMANTIC_VIEW in the schema. Teardown: run cleanup.sql.
 
-CREATE DATABASE IF NOT EXISTS REVENUE_PULSE_DB
-  COMMENT = 'Revenue Pulse quickstart (synthetic data). Safe to drop.';
-CREATE SCHEMA IF NOT EXISTS REVENUE_PULSE_DB.DASHBOARD_DEMO
-  COMMENT = 'Revenue Pulse Snowflake Dashboards demo (synthetic data)';
+CREATE SCHEMA IF NOT EXISTS TEMP.CNANTASENAMAT;
 
-CREATE OR REPLACE TABLE REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS (
+CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.CUSTOMERS (
   CUSTOMER_ID VARCHAR NOT NULL PRIMARY KEY,
   CUSTOMER_NAME VARCHAR NOT NULL,
   REGION VARCHAR NOT NULL,
   SEGMENT VARCHAR NOT NULL
-) COMMENT = 'Synthetic customer accounts';
+) COMMENT = 'Synthetic customer accounts' COPY GRANTS;
 
-CREATE OR REPLACE TABLE REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS (
+CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.PRODUCTS (
   PRODUCT_ID VARCHAR NOT NULL PRIMARY KEY,
   PRODUCT_NAME VARCHAR NOT NULL
-) COMMENT = 'Synthetic product lines';
+) COMMENT = 'Synthetic product lines' COPY GRANTS;
 
-CREATE OR REPLACE TABLE REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY (
+CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.REVENUE_MONTHLY (
   REVENUE_ID VARCHAR NOT NULL PRIMARY KEY,
   MONTH DATE NOT NULL,
   CUSTOMER_ID VARCHAR NOT NULL,
@@ -34,9 +35,9 @@ CREATE OR REPLACE TABLE REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY (
   COST_CENTS NUMBER(18,0) NOT NULL,
   TARGET_CENTS NUMBER(18,0) NOT NULL,
   RECORDED_DRIVER VARCHAR NOT NULL
-) COMMENT = 'Synthetic revenue at account x product x month grain';
+) COMMENT = 'Synthetic revenue at account x product x month grain' COPY GRANTS;
 
-INSERT INTO REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS VALUES
+INSERT INTO TEMP.CNANTASENAMAT.CUSTOMERS VALUES
 ('C001','Demo Americas Enterprise 01','Americas','Enterprise'),
 ('C002','Demo Americas Enterprise 02','Americas','Enterprise'),
 ('C003','Demo Americas Enterprise 03','Americas','Enterprise'),
@@ -92,14 +93,14 @@ INSERT INTO REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS VALUES
 ('C053','Demo APAC SMB 05','APAC','SMB'),
 ('C054','Demo APAC SMB 06','APAC','SMB');
 
-INSERT INTO REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS VALUES
+INSERT INTO TEMP.CNANTASENAMAT.PRODUCTS VALUES
 ('P01','Analytics Cloud'),
 ('P02','Data Platform'),
 ('P03','AI Studio');
 
 -- Revenue rows are packed as (customer, product, YYYYMM, gross, discount, refund, cost,
 -- target, driver code) to keep this file small; the SELECT expands them to full columns.
-INSERT INTO REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY
+INSERT INTO TEMP.CNANTASENAMAT.REVENUE_MONTHLY
 SELECT c || '-' || p || '-' || ym, TO_DATE(ym::VARCHAR, 'YYYYMM'), c, p, g, d, r, k, t,
   DECODE(dr, 0, 'NORMAL_TRADING', 1, 'RECORDED_CONTRACT_DOWNSIZE', 2, 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT', 3, 'RECORDED_RENEWAL_DELAY')
 FROM VALUES
@@ -3993,13 +3994,13 @@ FROM VALUES
 ('C054','P03',202609,111202,6698,1116,31016,212665,2)
   AS v(c, p, ym, g, d, r, k, t, dr);
 
-CREATE OR REPLACE SEMANTIC VIEW REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW
+CREATE OR REPLACE SEMANTIC VIEW TEMP.CNANTASENAMAT.REVENUE_SEMANTIC_VIEW
   TABLES (
-    revenue AS REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY PRIMARY KEY (REVENUE_ID)
+    revenue AS TEMP.CNANTASENAMAT.REVENUE_MONTHLY PRIMARY KEY (REVENUE_ID)
       COMMENT = 'Monthly revenue, target, and cost per customer and product. Synthetic.',
-    customers AS REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS PRIMARY KEY (CUSTOMER_ID)
+    customers AS TEMP.CNANTASENAMAT.CUSTOMERS PRIMARY KEY (CUSTOMER_ID)
       WITH SYNONYMS = ('accounts', 'clients') COMMENT = 'Customer accounts with sales region and segment',
-    products AS REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS PRIMARY KEY (PRODUCT_ID)
+    products AS TEMP.CNANTASENAMAT.PRODUCTS PRIMARY KEY (PRODUCT_ID)
       WITH SYNONYMS = ('product lines') COMMENT = 'Product lines'
   )
   RELATIONSHIPS (
@@ -4044,10 +4045,11 @@ CREATE OR REPLACE SEMANTIC VIEW REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC
       COMMENT = 'Gross profit divided by net revenue, as a ratio; null when net revenue is zero'
   )
   COMMENT = 'Revenue Pulse: synthetic B2B revenue vs target by month, region, segment, account, and product. Data through 2026-09-30.'
-  AI_SQL_GENERATION 'Data is monthly and complete through September 2026. Last quarter or Q3 means months 2026-07-01 through 2026-09-01. Ratios are 0-1; present as percentages. Year-over-year compares the same months one year earlier.';
+  AI_SQL_GENERATION 'Data is monthly and complete through September 2026. Last quarter or Q3 means months 2026-07-01 through 2026-09-01. Ratios are 0-1; present as percentages. Year-over-year compares the same months one year earlier.'
+  COPY GRANTS;
 
 -- Expect 54 customers, 3 products, 3888 revenue rows.
 SELECT
-  (SELECT COUNT(*) FROM REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS) AS CUSTOMERS,
-  (SELECT COUNT(*) FROM REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS) AS PRODUCTS,
-  (SELECT COUNT(*) FROM REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY) AS REVENUE_ROWS;
+  (SELECT COUNT(*) FROM TEMP.CNANTASENAMAT.CUSTOMERS) AS CUSTOMERS,
+  (SELECT COUNT(*) FROM TEMP.CNANTASENAMAT.PRODUCTS) AS PRODUCTS,
+  (SELECT COUNT(*) FROM TEMP.CNANTASENAMAT.REVENUE_MONTHLY) AS REVENUE_ROWS;

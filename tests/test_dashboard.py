@@ -202,20 +202,41 @@ class CompactDashboardTests(unittest.TestCase):
 
 
 class GettingStartedTests(unittest.TestCase):
-    def test_dash_copy_matches_reference(self):
-        self.assertEqual((ROOT / "getting-started/revenue_pulse.dash").read_bytes(),
-                         (ROOT / "dashboards/revenue_pulse.dash").read_bytes())
+    FQ = "TEMP.CNANTASENAMAT"
 
-    def test_setup_is_current(self):
+    def test_files_are_current(self):
         import subprocess, sys, tempfile
         with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp) / "setup.sql"
             subprocess.run([sys.executable, str(ROOT / "scripts/build_getting_started.py"),
-                            "REVENUE_PULSE_DB.DASHBOARD_DEMO", str(out)], check=True,
-                           capture_output=True)
-            self.assertEqual(out.read_text(), (ROOT / "getting-started/setup.sql").read_text())
+                            self.FQ, tmp], check=True, capture_output=True)
+            for name in ("setup.sql", "cleanup.sql", "revenue_pulse.dash"):
+                with self.subTest(name=name):
+                    self.assertEqual((Path(tmp) / name).read_text(),
+                                     (ROOT / "getting-started" / name).read_text())
 
-    def test_cleanup_drops_setup_database(self):
+    def test_dash_matches_reference_except_schema(self):
+        ref = (ROOT / "dashboards/revenue_pulse.dash").read_text()
+        part1 = (ROOT / "getting-started/revenue_pulse.dash").read_text()
+        self.assertNotIn("REVENUE_PULSE_DB", part1)
+        self.assertEqual(part1, ref.replace("REVENUE_PULSE_DB.DASHBOARD_DEMO", self.FQ))
+
+    def test_part1_needs_no_database_or_account_privileges(self):
+        for name in ("setup.sql", "cleanup.sql"):
+            sql = (ROOT / "getting-started" / name).read_text()
+            body = "\n".join(l for l in sql.splitlines()
+                             if l.strip() and not l.startswith("--")).upper()
+            with self.subTest(name=name):
+                self.assertNotIn("CREATE DATABASE", body)
+                self.assertNotIn("DROP DATABASE", body)
+                self.assertNotIn("DROP SCHEMA", body)
+                self.assertNotIn("REVENUE_PULSE_DB", body)
+
+    def test_cleanup_drops_only_setup_objects(self):
         stmts = [l for l in (ROOT / "getting-started/cleanup.sql").read_text().splitlines()
                  if l.strip() and not l.startswith("--")]
-        self.assertEqual(stmts, ["DROP DATABASE IF EXISTS REVENUE_PULSE_DB;"])
+        self.assertEqual(stmts, [
+            f"DROP SEMANTIC VIEW IF EXISTS {self.FQ}.REVENUE_SEMANTIC_VIEW;",
+            f"DROP TABLE IF EXISTS {self.FQ}.REVENUE_MONTHLY;",
+            f"DROP TABLE IF EXISTS {self.FQ}.PRODUCTS;",
+            f"DROP TABLE IF EXISTS {self.FQ}.CUSTOMERS;",
+        ])

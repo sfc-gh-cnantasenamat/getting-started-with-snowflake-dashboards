@@ -37,8 +37,7 @@ used = {ds for tab in dash["tabs"] for t in tab["tiles"] for ds in t.get("dataso
 dash["datasources"] = {k: v for k, v in full.datasources.items() if k in used}
 
 if __name__ == "__main__":
-    # Part 1 ships an identical copy in getting-started/.
-    for out in (full.ROOT / "dashboards/revenue_pulse.dash",
-                full.ROOT / "getting-started/revenue_pulse.dash"):
-        out.write_text(json.dumps(dash, indent=2) + "\n")
-        print(f"Wrote {out} with {sum(len(t['tiles']) for t in dash['tabs'])} tiles")
+    out = full.ROOT / "dashboards/revenue_pulse.dash"
+    out.write_text(json.dumps(dash, indent=2) + "\n")
+    print(f"Wrote {out} with {sum(len(t['tiles']) for t in dash['tabs'])} tiles")
+    # Part 1's copy points at a different schema; rerun build_getting_started.py.
