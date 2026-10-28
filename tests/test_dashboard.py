@@ -227,6 +227,7 @@ class GettingStartedTests(unittest.TestCase):
                              if l.strip() and not l.startswith("--")).upper()
             with self.subTest(name=name):
                 self.assertNotIn("CREATE DATABASE", body)
+                self.assertNotIn("CREATE SCHEMA", body)  # needs CREATE SCHEMA on the database even IF NOT EXISTS
                 self.assertNotIn("DROP DATABASE", body)
                 self.assertNotIn("DROP SCHEMA", body)
                 self.assertNotIn("REVENUE_PULSE_DB", body)

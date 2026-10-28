@@ -13,7 +13,7 @@ The guide holds the walkthrough: the Cortex Code prompts, the expected output an
 
 ## Part 1 quick start
 
-Part 1 works in an existing schema, `TEMP.CNANTASENAMAT` by default, so it needs no `ACCOUNTADMIN`, `SYSADMIN`, or `CREATE DATABASE`. The role needs `USAGE` on the database and a warehouse, plus `CREATE TABLE` and `CREATE SEMANTIC VIEW` on the schema; a schema's owner has all of these. To use a different schema, find-and-replace `TEMP.CNANTASENAMAT` with your `DATABASE.SCHEMA` in all three files before uploading.
+Part 1 works in an existing schema, `TEMP.CNANTASENAMAT` by default, so it needs no `ACCOUNTADMIN`, `SYSADMIN`, or `CREATE DATABASE`. The role needs `USAGE` on the database, the schema, and a warehouse, plus `CREATE TABLE` and `CREATE SEMANTIC VIEW` on the schema; a schema's owner has all of these. The schema must already exist: setup doesn't create it, because `CREATE SCHEMA IF NOT EXISTS` still requires `CREATE SCHEMA` on the database. To use a different schema, find-and-replace `TEMP.CNANTASENAMAT` with your `DATABASE.SCHEMA` in all three files before uploading.
 
 1. In Snowsight, open **Projects » Workspaces**. In **My Workspace**, select **+ Add New » Upload Files** and upload [`getting-started/setup.sql`](getting-started/setup.sql).
 2. Open it, pick your role and a warehouse, and select **Run All**. It finishes in about 10 seconds and returns 54 customers, 3 products, and 3,888 revenue rows.

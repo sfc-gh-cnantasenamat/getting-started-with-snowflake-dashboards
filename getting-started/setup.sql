@@ -3,14 +3,13 @@
 -- existing schema, TEMP.CNANTASENAMAT. No new database, stages, or Git integrations.
 -- To use another schema, find-and-replace TEMP.CNANTASENAMAT with your DATABASE.SCHEMA in
 -- this file, revenue_pulse.dash, and cleanup.sql before uploading them.
--- Role: any role with USAGE on the database, a warehouse, and on the schema
--- CREATE TABLE and CREATE SEMANTIC VIEW (the schema's owner has all of these).
+-- Role: any role with USAGE on the database, the schema, and a warehouse, plus
+-- CREATE TABLE and CREATE SEMANTIC VIEW on the schema. The schema must already
+-- exist; this script doesn't create it, so no database-level privilege is needed.
 -- No ACCOUNTADMIN or SYSADMIN needed. Upload to a workspace and select Run All.
 -- Rerunning is safe: objects are replaced and keep their grants.
 -- Note: this replaces any existing CUSTOMERS, PRODUCTS, REVENUE_MONTHLY, or
 -- REVENUE_SEMANTIC_VIEW in the schema. Teardown: run cleanup.sql.
-
-CREATE SCHEMA IF NOT EXISTS TEMP.CNANTASENAMAT;
 
 CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.CUSTOMERS (
   CUSTOMER_ID VARCHAR NOT NULL PRIMARY KEY,
