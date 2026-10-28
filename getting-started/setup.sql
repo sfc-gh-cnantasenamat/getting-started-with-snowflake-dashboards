@@ -1,8 +1,8 @@
 -- Revenue Pulse: setup for Getting Started with Snowflake Dashboards.
 -- Creates three tables of synthetic revenue data and a semantic view in an
--- existing schema, TEMP.CNANTASENAMAT. No new database, stages, or Git integrations.
--- To use another schema, find-and-replace TEMP.CNANTASENAMAT with your DATABASE.SCHEMA in
--- this file, revenue_pulse.dash, and cleanup.sql before uploading them.
+-- existing schema. No new database, stages, or Git integrations.
+-- Before running: set the two USE lines below to your own database and schema,
+-- and replace TEMP.CNANTASENAMAT in revenue_pulse.dash with the same DATABASE.SCHEMA.
 -- Role: any role with USAGE on the database, the schema, and a warehouse, plus
 -- CREATE TABLE and CREATE SEMANTIC VIEW on the schema. The schema must already
 -- exist; this script doesn't create it, so no database-level privilege is needed.
@@ -11,19 +11,22 @@
 -- Note: this replaces any existing CUSTOMERS, PRODUCTS, REVENUE_MONTHLY, or
 -- REVENUE_SEMANTIC_VIEW in the schema. Teardown: run cleanup.sql.
 
-CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.CUSTOMERS (
+USE DATABASE TEMP;
+USE SCHEMA CNANTASENAMAT;
+
+CREATE OR REPLACE TABLE CUSTOMERS (
   CUSTOMER_ID VARCHAR NOT NULL PRIMARY KEY,
   CUSTOMER_NAME VARCHAR NOT NULL,
   REGION VARCHAR NOT NULL,
   SEGMENT VARCHAR NOT NULL
 ) COMMENT = 'Synthetic customer accounts' COPY GRANTS;
 
-CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.PRODUCTS (
+CREATE OR REPLACE TABLE PRODUCTS (
   PRODUCT_ID VARCHAR NOT NULL PRIMARY KEY,
   PRODUCT_NAME VARCHAR NOT NULL
 ) COMMENT = 'Synthetic product lines' COPY GRANTS;
 
-CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.REVENUE_MONTHLY (
+CREATE OR REPLACE TABLE REVENUE_MONTHLY (
   REVENUE_ID VARCHAR NOT NULL PRIMARY KEY,
   MONTH DATE NOT NULL,
   CUSTOMER_ID VARCHAR NOT NULL,
@@ -36,7 +39,7 @@ CREATE OR REPLACE TABLE TEMP.CNANTASENAMAT.REVENUE_MONTHLY (
   RECORDED_DRIVER VARCHAR NOT NULL
 ) COMMENT = 'Synthetic revenue at account x product x month grain' COPY GRANTS;
 
-INSERT INTO TEMP.CNANTASENAMAT.CUSTOMERS VALUES
+INSERT INTO CUSTOMERS VALUES
 ('C001','Demo Americas Enterprise 01','Americas','Enterprise'),
 ('C002','Demo Americas Enterprise 02','Americas','Enterprise'),
 ('C003','Demo Americas Enterprise 03','Americas','Enterprise'),
@@ -92,14 +95,14 @@ INSERT INTO TEMP.CNANTASENAMAT.CUSTOMERS VALUES
 ('C053','Demo APAC SMB 05','APAC','SMB'),
 ('C054','Demo APAC SMB 06','APAC','SMB');
 
-INSERT INTO TEMP.CNANTASENAMAT.PRODUCTS VALUES
+INSERT INTO PRODUCTS VALUES
 ('P01','Analytics Cloud'),
 ('P02','Data Platform'),
 ('P03','AI Studio');
 
 -- Revenue rows are packed as (customer, product, YYYYMM, gross, discount, refund, cost,
 -- target, driver code) to keep this file small; the SELECT expands them to full columns.
-INSERT INTO TEMP.CNANTASENAMAT.REVENUE_MONTHLY
+INSERT INTO REVENUE_MONTHLY
 SELECT c || '-' || p || '-' || ym, TO_DATE(ym::VARCHAR, 'YYYYMM'), c, p, g, d, r, k, t,
   DECODE(dr, 0, 'NORMAL_TRADING', 1, 'RECORDED_CONTRACT_DOWNSIZE', 2, 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT', 3, 'RECORDED_RENEWAL_DELAY')
 FROM VALUES
@@ -3993,13 +3996,13 @@ FROM VALUES
 ('C054','P03',202609,111202,6698,1116,31016,212665,2)
   AS v(c, p, ym, g, d, r, k, t, dr);
 
-CREATE OR REPLACE SEMANTIC VIEW TEMP.CNANTASENAMAT.REVENUE_SEMANTIC_VIEW
+CREATE OR REPLACE SEMANTIC VIEW REVENUE_SEMANTIC_VIEW
   TABLES (
-    revenue AS TEMP.CNANTASENAMAT.REVENUE_MONTHLY PRIMARY KEY (REVENUE_ID)
+    revenue AS REVENUE_MONTHLY PRIMARY KEY (REVENUE_ID)
       COMMENT = 'Monthly revenue, target, and cost per customer and product. Synthetic.',
-    customers AS TEMP.CNANTASENAMAT.CUSTOMERS PRIMARY KEY (CUSTOMER_ID)
+    customers AS CUSTOMERS PRIMARY KEY (CUSTOMER_ID)
       WITH SYNONYMS = ('accounts', 'clients') COMMENT = 'Customer accounts with sales region and segment',
-    products AS TEMP.CNANTASENAMAT.PRODUCTS PRIMARY KEY (PRODUCT_ID)
+    products AS PRODUCTS PRIMARY KEY (PRODUCT_ID)
       WITH SYNONYMS = ('product lines') COMMENT = 'Product lines'
   )
   RELATIONSHIPS (
@@ -4049,6 +4052,6 @@ CREATE OR REPLACE SEMANTIC VIEW TEMP.CNANTASENAMAT.REVENUE_SEMANTIC_VIEW
 
 -- Expect 54 customers, 3 products, 3888 revenue rows.
 SELECT
-  (SELECT COUNT(*) FROM TEMP.CNANTASENAMAT.CUSTOMERS) AS CUSTOMERS,
-  (SELECT COUNT(*) FROM TEMP.CNANTASENAMAT.PRODUCTS) AS PRODUCTS,
-  (SELECT COUNT(*) FROM TEMP.CNANTASENAMAT.REVENUE_MONTHLY) AS REVENUE_ROWS;
+  (SELECT COUNT(*) FROM CUSTOMERS) AS CUSTOMERS,
+  (SELECT COUNT(*) FROM PRODUCTS) AS PRODUCTS,
+  (SELECT COUNT(*) FROM REVENUE_MONTHLY) AS REVENUE_ROWS;

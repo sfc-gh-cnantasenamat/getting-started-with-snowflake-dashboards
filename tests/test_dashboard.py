@@ -235,9 +235,21 @@ class GettingStartedTests(unittest.TestCase):
     def test_cleanup_drops_only_setup_objects(self):
         stmts = [l for l in (ROOT / "getting-started/cleanup.sql").read_text().splitlines()
                  if l.strip() and not l.startswith("--")]
+        db, schema = self.FQ.split(".")
         self.assertEqual(stmts, [
-            f"DROP SEMANTIC VIEW IF EXISTS {self.FQ}.REVENUE_SEMANTIC_VIEW;",
-            f"DROP TABLE IF EXISTS {self.FQ}.REVENUE_MONTHLY;",
-            f"DROP TABLE IF EXISTS {self.FQ}.PRODUCTS;",
-            f"DROP TABLE IF EXISTS {self.FQ}.CUSTOMERS;",
+            f"USE DATABASE {db};",
+            f"USE SCHEMA {schema};",
+            "DROP SEMANTIC VIEW IF EXISTS REVENUE_SEMANTIC_VIEW;",
+            "DROP TABLE IF EXISTS REVENUE_MONTHLY;",
+            "DROP TABLE IF EXISTS PRODUCTS;",
+            "DROP TABLE IF EXISTS CUSTOMERS;",
         ])
+
+    def test_sql_uses_context_not_qualified_names(self):
+        db, schema = self.FQ.split(".")
+        for name in ("setup.sql", "cleanup.sql"):
+            sql = (ROOT / "getting-started" / name).read_text()
+            body = [l for l in sql.splitlines() if l.strip() and not l.startswith("--")]
+            with self.subTest(name=name):
+                self.assertEqual(body[:2], [f"USE DATABASE {db};", f"USE SCHEMA {schema};"])
+                self.assertNotIn(self.FQ + ".", "\n".join(body))

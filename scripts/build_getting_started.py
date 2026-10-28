@@ -28,12 +28,13 @@ assert sv.endswith(";")
 sv = sv[:-1] + "\n  COPY GRANTS;"
 drivers = sorted({r['recorded_driver'] for r in rev})
 dcode = {d: i for i, d in enumerate(drivers)}
+DB, SCHEMA = FQ.split('.')
 
 head = f"""-- Revenue Pulse: setup for Getting Started with Snowflake Dashboards.
 -- Creates three tables of synthetic revenue data and a semantic view in an
--- existing schema, {FQ}. No new database, stages, or Git integrations.
--- To use another schema, find-and-replace {FQ} with your DATABASE.SCHEMA in
--- this file, revenue_pulse.dash, and cleanup.sql before uploading them.
+-- existing schema. No new database, stages, or Git integrations.
+-- Before running: set the two USE lines below to your own database and schema,
+-- and replace {FQ} in revenue_pulse.dash with the same DATABASE.SCHEMA.
 -- Role: any role with USAGE on the database, the schema, and a warehouse, plus
 -- CREATE TABLE and CREATE SEMANTIC VIEW on the schema. The schema must already
 -- exist; this script doesn't create it, so no database-level privilege is needed.
@@ -41,6 +42,9 @@ head = f"""-- Revenue Pulse: setup for Getting Started with Snowflake Dashboards
 -- Rerunning is safe: objects are replaced and keep their grants.
 -- Note: this replaces any existing CUSTOMERS, PRODUCTS, REVENUE_MONTHLY, or
 -- REVENUE_SEMANTIC_VIEW in the schema. Teardown: run cleanup.sql.
+
+USE DATABASE {DB};
+USE SCHEMA {SCHEMA};
 
 CREATE OR REPLACE TABLE {FQ}.CUSTOMERS (
   CUSTOMER_ID VARCHAR NOT NULL PRIMARY KEY,
@@ -91,20 +95,25 @@ SELECT
   (SELECT COUNT(*) FROM {FQ}.PRODUCTS) AS PRODUCTS,
   (SELECT COUNT(*) FROM {FQ}.REVENUE_MONTHLY) AS REVENUE_ROWS;
 """)
-open(OUT, 'w').write("\n".join(parts))
+# Objects are named relative to the USE DATABASE / USE SCHEMA context set above.
+open(OUT, 'w').write("\n".join(parts).replace(FQ + '.', ''))
 
 cleanup = f"""-- Revenue Pulse: cleanup for Getting Started with Snowflake Dashboards.
--- Drops the four objects setup.sql created in {FQ}. The schema itself is left
--- in place because it existed before the tutorial.
+-- Drops the four objects setup.sql created. The schema itself is left in place
+-- because it existed before the tutorial. Set the USE lines to the same database
+-- and schema you used in setup.sql.
 -- Role: the role that ran setup.sql (it owns these objects). No warehouse needed.
 -- First, if you published the dashboard, remove its roles in Share and delete
 -- the artifact in CoWork. Afterwards, delete setup.sql, revenue_pulse.dash, and
 -- this file from your workspace.
 
-DROP SEMANTIC VIEW IF EXISTS {FQ}.REVENUE_SEMANTIC_VIEW;
-DROP TABLE IF EXISTS {FQ}.REVENUE_MONTHLY;
-DROP TABLE IF EXISTS {FQ}.PRODUCTS;
-DROP TABLE IF EXISTS {FQ}.CUSTOMERS;
+USE DATABASE {DB};
+USE SCHEMA {SCHEMA};
+
+DROP SEMANTIC VIEW IF EXISTS REVENUE_SEMANTIC_VIEW;
+DROP TABLE IF EXISTS REVENUE_MONTHLY;
+DROP TABLE IF EXISTS PRODUCTS;
+DROP TABLE IF EXISTS CUSTOMERS;
 """
 open(os.path.join(OUT_DIR, 'cleanup.sql'), 'w').write(cleanup)
 
