@@ -7,8 +7,8 @@
 -- the artifact in CoWork. Afterwards, delete setup.sql, revenue_pulse.dash, and
 -- this file from your workspace.
 
-USE DATABASE TEMP;
-USE SCHEMA CNANTASENAMAT;
+USE DATABASE TEMP;   -- Replace TEMP with your own database
+USE SCHEMA CNANTASENAMAT;   -- Replace CNANTASENAMAT with your own schema in that database
 
 DROP SEMANTIC VIEW IF EXISTS REVENUE_SEMANTIC_VIEW;
 DROP TABLE IF EXISTS REVENUE_MONTHLY;

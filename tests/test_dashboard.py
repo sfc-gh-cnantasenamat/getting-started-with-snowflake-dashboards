@@ -233,7 +233,7 @@ class GettingStartedTests(unittest.TestCase):
                 self.assertNotIn("REVENUE_PULSE_DB", body)
 
     def test_cleanup_drops_only_setup_objects(self):
-        stmts = [l for l in (ROOT / "getting-started/cleanup.sql").read_text().splitlines()
+        stmts = [l.split("--")[0].strip() for l in (ROOT / "getting-started/cleanup.sql").read_text().splitlines()
                  if l.strip() and not l.startswith("--")]
         db, schema = self.FQ.split(".")
         self.assertEqual(stmts, [
@@ -251,5 +251,8 @@ class GettingStartedTests(unittest.TestCase):
             sql = (ROOT / "getting-started" / name).read_text()
             body = [l for l in sql.splitlines() if l.strip() and not l.startswith("--")]
             with self.subTest(name=name):
-                self.assertEqual(body[:2], [f"USE DATABASE {db};", f"USE SCHEMA {schema};"])
+                use = [l.split("--")[0].strip() for l in body[:2]]
+                self.assertEqual(use, [f"USE DATABASE {db};", f"USE SCHEMA {schema};"])
+                self.assertIn(f"Replace {db} with your own database", body[0])
+                self.assertIn(f"Replace {schema} with your own schema", body[1])
                 self.assertNotIn(self.FQ + ".", "\n".join(body))

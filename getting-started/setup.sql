@@ -11,8 +11,8 @@
 -- Note: this replaces any existing CUSTOMERS, PRODUCTS, REVENUE_MONTHLY, or
 -- REVENUE_SEMANTIC_VIEW in the schema. Teardown: run cleanup.sql.
 
-USE DATABASE TEMP;
-USE SCHEMA CNANTASENAMAT;
+USE DATABASE TEMP;   -- Replace TEMP with your own database
+USE SCHEMA CNANTASENAMAT;   -- Replace CNANTASENAMAT with your own schema in that database
 
 CREATE OR REPLACE TABLE CUSTOMERS (
   CUSTOMER_ID VARCHAR NOT NULL PRIMARY KEY,

@@ -43,8 +43,8 @@ head = f"""-- Revenue Pulse: setup for Getting Started with Snowflake Dashboards
 -- Note: this replaces any existing CUSTOMERS, PRODUCTS, REVENUE_MONTHLY, or
 -- REVENUE_SEMANTIC_VIEW in the schema. Teardown: run cleanup.sql.
 
-USE DATABASE {DB};
-USE SCHEMA {SCHEMA};
+USE DATABASE {DB};   -- Replace {DB} with your own database
+USE SCHEMA {SCHEMA};   -- Replace {SCHEMA} with your own schema in that database
 
 CREATE OR REPLACE TABLE {FQ}.CUSTOMERS (
   CUSTOMER_ID VARCHAR NOT NULL PRIMARY KEY,
@@ -107,8 +107,8 @@ cleanup = f"""-- Revenue Pulse: cleanup for Getting Started with Snowflake Dashb
 -- the artifact in CoWork. Afterwards, delete setup.sql, revenue_pulse.dash, and
 -- this file from your workspace.
 
-USE DATABASE {DB};
-USE SCHEMA {SCHEMA};
+USE DATABASE {DB};   -- Replace {DB} with your own database
+USE SCHEMA {SCHEMA};   -- Replace {SCHEMA} with your own schema in that database
 
 DROP SEMANTIC VIEW IF EXISTS REVENUE_SEMANTIC_VIEW;
 DROP TABLE IF EXISTS REVENUE_MONTHLY;
