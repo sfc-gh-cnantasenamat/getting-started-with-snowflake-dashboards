@@ -9,57 +9,33 @@ Both parts use the same synthetic Revenue Pulse data. Part 1 gets a finished das
 
 ## Part 1: Deploy the ready-made dashboard
 
-In Part 1 you load a small synthetic revenue dataset and a semantic view into a schema you already have, open the finished Revenue Pulse dashboard, explore its chart actions and hierarchy drill-down, then publish it to Snowflake CoWork and ask why the numbers moved. All data is synthetic.
+Get the finished Revenue Pulse dashboard running in a few minutes, explore its chart actions and drill-downs, then ask CoWork why the numbers moved.
 
-Everything runs in Snowsight. You don't need Python, a CLI, a Git integration, or a local clone.
+**You need:** a schema you can create tables and semantic views in, and a warehouse. No admin role.
 
-The guide holds the walkthrough: what to click, the expected numbers at each step, and the screenshots. This repository holds the files it uses: `setup.sql`, `revenue_pulse.dash`, and `cleanup.sql` in `getting-started/`. The steps below are a quick reference; follow the guide the first time.
+1. Point the files in [`getting-started/`](getting-started/) at your schema.
+2. Run `setup.sql` in a workspace to load the data and semantic view.
+3. Upload and open `revenue_pulse.dash`.
+4. When you're done, run `cleanup.sql`.
 
-Part 1 works in an existing schema, `TEMP.CNANTASENAMAT` by default (replace it with your own database and schema), so it needs no `ACCOUNTADMIN`, `SYSADMIN`, or `CREATE DATABASE`. The role needs `USAGE` on the database, the schema, and a warehouse, plus `CREATE TABLE` and `CREATE SEMANTIC VIEW` on the schema; a schema's owner has all of these. The schema must already exist: setup doesn't create it, because `CREATE SCHEMA IF NOT EXISTS` still requires `CREATE SCHEMA` on the database. To use a different schema, edit the `USE DATABASE` and `USE SCHEMA` lines at the top of `setup.sql` and `cleanup.sql`, and replace `TEMP.CNANTASENAMAT` in `revenue_pulse.dash`, whose queries keep fully qualified names so shared viewers can run them. The semantic view stores fully qualified table references, so the dashboard works from any session context.
+The [guide](https://github.com/sfc-gh-cnantasenamat/sfguide-getting-started-with-snowflake-dashboards) has the full walkthrough and expected numbers.
 
-1. In Snowsight, open **Projects » Workspaces**. In **My Workspace**, select **+ Add New » Upload Files** and upload [`getting-started/setup.sql`](getting-started/setup.sql).
-2. Open it, pick your role and a warehouse, and select **Run All**. It finishes in about 10 seconds and returns 54 customers, 3 products, and 3,888 revenue rows.
-3. Upload [`getting-started/revenue_pulse.dash`](getting-started/revenue_pulse.dash) the same way and open it.
-4. To clean up, run [`getting-started/cleanup.sql`](getting-started/cleanup.sql) with the same role. It drops the four objects setup created and leaves the schema in place.
+### Optional: OSSIE variant
 
-`setup.sql` is self-contained: it inlines the data from `data/` and the semantic view from `sql/02_semantic_view.sql`, with no stage or Git integration. It replaces any existing `CUSTOMERS`, `PRODUCTS`, `REVENUE_MONTHLY`, or `REVENUE_SEMANTIC_VIEW` in the schema, and uses `COPY GRANTS` so a rerun keeps their grants. `getting-started/revenue_pulse.dash` is `dashboards/revenue_pulse.dash` pointed at the Part 1 schema. Part 2 sets up its own `REVENUE_PULSE_DB` and doesn't reuse Part 1's objects.
-
-### Optional: define the semantic view with OSSIE
-
-[`getting-started-ossie/`](getting-started-ossie/) is the same Part 1 setup with the semantic view defined in [Apache Ossie](https://docs.snowflake.com/en/sql-reference/stored-procedures/system_create_semantic_view_from_ossie_yaml) (incubating) YAML, an open semantic model standard shared across AI and BI tools. Use it instead of `getting-started/`, not alongside it: both create the same objects in the same schema.
-
-- `setup.sql` creates the same tables and data, then calls `SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML` instead of `CREATE SEMANTIC VIEW`. It needs the same privileges, and a rerun keeps grants. The procedure needs fully qualified names, so replace `TEMP.CNANTASENAMAT` in the `CALL` and its three dataset `source:` lines as well as in the `USE` lines.
-- `revenue_pulse.dash` is the Part 1 dashboard with unprefixed metric references (`NET_REVENUE` instead of `revenue.net_revenue`), because OSSIE metrics are model-level, so use it only with the OSSIE view.
-- `cleanup.sql` is identical to the native one.
-- `revenue_semantic_view.ossie.yaml` is the same YAML as a standalone file, for other tools.
-
-OSSIE has no synonyms or custom instructions; they become `ai_context` text. The dashboard returns the same results with either view.
+[`getting-started-ossie/`](getting-started-ossie/) is the same setup with the semantic view defined in open [Apache Ossie](https://docs.snowflake.com/en/sql-reference/stored-procedures/system_create_semantic_view_from_ossie_yaml) YAML instead of native DDL. Use it in place of `getting-started/`; the dashboard returns the same results.
 
 ## Part 2: Build the dashboard with CoCo
 
-In Part 2 you use Cortex Code prompts to build, refine, and check a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
+Build the same dashboard yourself by prompting Cortex Code, publish it to a sales-ops role, and ask follow-up questions in CoWork.
 
-Everything runs in Snowsight. You don't need Python, a CLI, or a local clone.
+**You need:** `ACCOUNTADMIN` (setup creates a database, a Git integration, and a viewer role) and a warehouse.
 
-The guide holds the walkthrough: the Cortex Code prompts, the expected output and checks for each step, and the screenshots. This repository holds what those steps run against: the SQL, the synthetic data, and the completed dashboard. The steps below are a quick reference; follow the guide the first time.
+1. Run the SQL scripts in [`sql/`](sql/) in order, starting with `00_bootstrap.sql`.
+2. Open this repo as a Git workspace.
+3. Prompt Cortex Code to build your own dashboard, using `dashboards/revenue_pulse.dash` as the reference.
+4. Publish it as an artifact and share it.
 
-1. In Snowsight, open **Projects > Workspaces**, create a SQL file in **My Workspace**, and set the role to `ACCOUNTADMIN` and the warehouse to `COMPUTE_WH`.
-2. Paste and run [`sql/00_bootstrap.sql`](sql/00_bootstrap.sql). It creates `REVENUE_PULSE_DB`, an API integration, and a Git repository object over this repo.
-3. Run the remaining scripts straight from the repository:
-
-```sql
-EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branches/main/sql/01_setup.sql;
-EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branches/main/sql/02_semantic_view.sql;
-EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branches/main/sql/03_agent.sql;
-EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branches/main/sql/04_viewer_role.sql;
-```
-
-4. In **Workspaces**, select **+ > Git workspace**, paste this repo's URL, and choose the `REVENUE_PULSE_GIT_API` integration (the dialog may preselect another one) and **Public repository**.
-5. Open Cortex Code in the workspace and follow the guide's prompts to build your own `dashboards/revenue_pulse_draft.dash`. Leave `dashboards/revenue_pulse.dash` unchanged; it is the completed example used for the guide's screenshots and expected figures.
-   To view the completed example, open it and select the role and a warehouse (for example `COMPUTE_WH`) in its toolbar before **Run all**.
-6. After validating your draft, choose **Share > Publish as artifact** with the `DASHBOARD_DEMO_SALES_OPS` role. See the guide for the full walkthrough.
-
-If your warehouse isn't `COMPUTE_WH`, replace it in `sql/03_agent.sql` and `sql/04_viewer_role.sql` in your own copy of the files before running them.
+The [guide](https://github.com/sfc-gh-cnantasenamat/sfguide-build-snowflake-dashboards-with-coco) has the prompts, checks, and screenshots for each step.
 
 ## Layout
 
