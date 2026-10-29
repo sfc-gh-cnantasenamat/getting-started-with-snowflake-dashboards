@@ -9,7 +9,7 @@ Both parts use the same synthetic Revenue Pulse data. Part 1 gets a finished das
 
 ### See it in action
 
-Revenue Pulse tracks a fictional B2B software company's net revenue against target, broken down by month, region, segment, account, and product. Every chart is also a filter. Click a chart and the rest of the dashboard filters to match:
+Revenue Pulse tracks a fictional B2B software company's net revenue against target, broken down by month, region, segment, account, and product. It's built with [Snowflake Dashboards](https://docs.snowflake.com/en/LIMITEDACCESS/cowork-dashboards), where every chart is also a filter through [chart actions](https://docs.snowflake.com/en/LIMITEDACCESS/cowork-dashboards#chart-actions). Click a chart and the rest of the dashboard filters to match:
 
 ![Revenue Pulse dashboard: scrolling the KPI tiles and charts, then clicking a region on the variance bars to filter the other charts](docs/images/dashboard-chart-actions.gif)
 
@@ -42,3 +42,11 @@ Build the same dashboard yourself by prompting Cortex Code, publish it to a sale
 4. Publish it as an artifact and share it.
 
 The [guide](https://github.com/sfc-gh-cnantasenamat/sfguide-build-snowflake-dashboards-with-coco) has the prompts, checks, and screenshots for each step.
+
+## References
+
+- [Dashboards in Snowsight and Snowflake CoWork](https://docs.snowflake.com/en/LIMITEDACCESS/cowork-dashboards): Snowflake Dashboards documentation
+- [Chart actions](https://docs.snowflake.com/en/LIMITEDACCESS/cowork-dashboards#chart-actions): how clicking or dragging on a chart filters other tiles
+- [SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML](https://docs.snowflake.com/en/sql-reference/stored-procedures/system_create_semantic_view_from_ossie_yaml): used by the OSSIE variant
+- [Getting Started with Snowflake Dashboards](https://github.com/sfc-gh-cnantasenamat/sfguide-getting-started-with-snowflake-dashboards): Part 1 guide
+- [Build Snowflake Dashboards with CoCo](https://github.com/sfc-gh-cnantasenamat/sfguide-build-snowflake-dashboards-with-coco): Part 2 guide
