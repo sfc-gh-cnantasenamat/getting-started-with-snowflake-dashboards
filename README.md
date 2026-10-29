@@ -9,7 +9,7 @@ Both parts use the same synthetic Revenue Pulse data. Part 1 gets a finished das
 
 ### See it in action
 
-Click a chart and the rest of the dashboard filters to match:
+Revenue Pulse tracks a fictional B2B software company's net revenue against target, broken down by month, region, segment, account, and product. Every chart is also a filter. Click a chart and the rest of the dashboard filters to match:
 
 ![Revenue Pulse dashboard: scrolling the KPI tiles and charts, then clicking a region on the variance bars to filter the other charts](docs/images/dashboard-chart-actions.gif)
 
