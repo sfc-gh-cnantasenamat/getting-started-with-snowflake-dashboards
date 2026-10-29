@@ -3,15 +3,17 @@
 Companion code for both Snowflake Dashboards developer guides:
 
 - **Part 1, *Getting Started with Snowflake Dashboards*:** everything is in [`getting-started/`](getting-started/). Run `setup.sql`, upload `revenue_pulse.dash`, and explore a working dashboard in a few minutes.
-- **Part 2, *Build Snowflake Dashboards with CoCo*:** build the same dashboard from scratch. The rest of this README covers Part 2.
+- **Part 2, *Build Snowflake Dashboards with CoCo*:** build the same dashboard from scratch.
 
-In Part 2 you use Cortex Code prompts to build, refine, and check a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
-
-Everything runs in Snowsight. You don't need Python, a CLI, or a local clone.
-
-The guide holds the walkthrough: the Cortex Code prompts, the expected output and checks for each step, and the screenshots. This repository holds what those steps run against: the SQL, the synthetic data, and the completed dashboard. The steps below are a quick reference; follow the guide the first time.
+Both parts use the same synthetic Revenue Pulse data. Part 1 gets a finished dashboard running in a few minutes, and Part 2 shows how to build it yourself with Cortex Code. The sections below give a quick-reference version of each.
 
 ## Part 1: Deploy the ready-made dashboard
+
+In Part 1 you load a small synthetic revenue dataset and a semantic view into a schema you already have, open the finished Revenue Pulse dashboard, explore its chart actions and hierarchy drill-down, then publish it to Snowflake CoWork and ask why the numbers moved. All data is synthetic.
+
+Everything runs in Snowsight. You don't need Python, a CLI, a Git integration, or a local clone.
+
+The guide holds the walkthrough: what to click, the expected numbers at each step, and the screenshots. This repository holds the files it uses: `setup.sql`, `revenue_pulse.dash`, and `cleanup.sql` in `getting-started/`. The steps below are a quick reference; follow the guide the first time.
 
 Part 1 works in an existing schema, `TEMP.CNANTASENAMAT` by default (replace it with your own database and schema), so it needs no `ACCOUNTADMIN`, `SYSADMIN`, or `CREATE DATABASE`. The role needs `USAGE` on the database, the schema, and a warehouse, plus `CREATE TABLE` and `CREATE SEMANTIC VIEW` on the schema; a schema's owner has all of these. The schema must already exist: setup doesn't create it, because `CREATE SCHEMA IF NOT EXISTS` still requires `CREATE SCHEMA` on the database. To use a different schema, edit the `USE DATABASE` and `USE SCHEMA` lines at the top of `setup.sql` and `cleanup.sql`, and replace `TEMP.CNANTASENAMAT` in `revenue_pulse.dash`, whose queries keep fully qualified names so shared viewers can run them. The semantic view stores fully qualified table references, so the dashboard works from any session context.
 
@@ -34,6 +36,12 @@ Part 1 works in an existing schema, `TEMP.CNANTASENAMAT` by default (replace it 
 OSSIE has no synonyms or custom instructions; they become `ai_context` text. The dashboard returns the same results with either view.
 
 ## Part 2: Build the dashboard with CoCo
+
+In Part 2 you use Cortex Code prompts to build, refine, and check a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
+
+Everything runs in Snowsight. You don't need Python, a CLI, or a local clone.
+
+The guide holds the walkthrough: the Cortex Code prompts, the expected output and checks for each step, and the screenshots. This repository holds what those steps run against: the SQL, the synthetic data, and the completed dashboard. The steps below are a quick reference; follow the guide the first time.
 
 1. In Snowsight, open **Projects > Workspaces**, create a SQL file in **My Workspace**, and set the role to `ACCOUNTADMIN` and the warehouse to `COMPUTE_WH`.
 2. Paste and run [`sql/00_bootstrap.sql`](sql/00_bootstrap.sql). It creates `REVENUE_PULSE_DB`, an API integration, and a Git repository object over this repo.
