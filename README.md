@@ -7,6 +7,12 @@ Companion code for both Snowflake Dashboards developer guides:
 
 Both parts use the same synthetic Revenue Pulse data. Part 1 gets a finished dashboard running in a few minutes, and Part 2 shows how to build it yourself with Cortex Code. The sections below give a quick-reference version of each.
 
+### See it in action
+
+Click a chart and the rest of the dashboard filters to match:
+
+![Revenue Pulse dashboard: scrolling the KPI tiles and charts, then clicking a region on the variance bars to filter the other charts](docs/images/dashboard-chart-actions.gif)
+
 ## Part 1: Deploy the ready-made dashboard
 
 Get the finished Revenue Pulse dashboard running in a few minutes, explore its chart actions and drill-downs, then ask CoWork why the numbers moved.
