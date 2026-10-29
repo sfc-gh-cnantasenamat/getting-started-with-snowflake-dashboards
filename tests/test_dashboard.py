@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("build_dashboard", ROOT / "scripts/build_dashboard.py")
+SPEC = importlib.util.spec_from_file_location("build_dashboard", ROOT / "maintainer-scripts/build_dashboard.py")
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 TILES = {tile["tile_id"]: tile for tab in MODULE.dash["tabs"] for tile in tab["tiles"]}
@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
 class CompactDashboardTests(unittest.TestCase):
     def test_compact_tabs_and_text_tiles(self):
-        spec = importlib.util.spec_from_file_location("build_compact", ROOT / "scripts/build_compact.py")
+        spec = importlib.util.spec_from_file_location("build_compact", ROOT / "maintainer-scripts/build_compact.py")
         compact = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(compact)
         self.assertEqual([t["title"] for t in compact.dash["tabs"]], ["Overview", "Hierarchical Chart", "Hierarchical Table", "Data Source"])
@@ -207,7 +207,7 @@ class GettingStartedTests(unittest.TestCase):
     def test_files_are_current(self):
         import subprocess, sys, tempfile
         with tempfile.TemporaryDirectory() as tmp:
-            subprocess.run([sys.executable, str(ROOT / "scripts/build_getting_started.py"),
+            subprocess.run([sys.executable, str(ROOT / "maintainer-scripts/build_getting_started.py"),
                             self.FQ, tmp], check=True, capture_output=True)
             for name in ("setup.sql", "cleanup.sql", "revenue_pulse.dash"):
                 with self.subTest(name=name):
@@ -256,3 +256,70 @@ class GettingStartedTests(unittest.TestCase):
                 self.assertIn(f"Replace {db} with your own database", body[0])
                 self.assertIn(f"Replace {schema} with your own schema", body[1])
                 self.assertNotIn(self.FQ + ".", "\n".join(body))
+
+
+class GettingStartedOssieTests(unittest.TestCase):
+    """getting-started-ossie/ is Part 1 with the semantic view defined in OSSIE YAML."""
+    FQ = "TEMP.CNANTASENAMAT"
+    DIR = ROOT / "getting-started-ossie"
+    METRICS = ["GROSS_MARGIN", "GROSS_PROFIT", "GROSS_REVENUE", "NET_REVENUE", "REVENUE_TARGET",
+               "TARGET_ATTAINMENT", "TARGET_VARIANCE", "TOTAL_DISCOUNTS", "TOTAL_REFUNDS"]
+
+    def test_files_are_current(self):
+        import subprocess, sys, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run([sys.executable, str(ROOT / "maintainer-scripts/build_getting_started_ossie.py"),
+                            self.FQ, tmp], check=True, capture_output=True)
+            for name in ("setup.sql", "cleanup.sql", "revenue_pulse.dash", "revenue_semantic_view.ossie.yaml"):
+                with self.subTest(name=name):
+                    self.assertEqual((Path(tmp) / name).read_text(), (self.DIR / name).read_text())
+
+    def test_setup_differs_from_native_only_in_semantic_view(self):
+        import re
+        native = (ROOT / "getting-started/setup.sql").read_text()
+        ossie = (self.DIR / "setup.sql").read_text()
+        self.assertNotIn("CREATE OR REPLACE SEMANTIC VIEW", ossie)
+        self.assertEqual(ossie.count("CALL SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML("), 1)
+        strip_native = re.sub(r"CREATE OR REPLACE SEMANTIC VIEW .*?COPY GRANTS;\n", "", native, flags=re.S)
+        strip_ossie = re.sub(r"-- The semantic view comes from OSSIE.*?\$\$\);\n", "", ossie, flags=re.S)
+        body = lambda s: [l for l in s.splitlines() if not l.startswith("--")]
+        self.assertEqual(body(strip_ossie), body(strip_native))
+
+    def test_yaml_matches_native_semantic_view(self):
+        import re
+        import yaml
+        model = yaml.safe_load((self.DIR / "revenue_semantic_view.ossie.yaml").read_text())
+        self.assertEqual(model["version"], "0.1.1")
+        self.assertEqual(model["name"], "REVENUE_SEMANTIC_VIEW")
+        self.assertEqual(sorted(m["name"] for m in model["metrics"]), self.METRICS)
+        self.assertEqual(sorted(d["source"] for d in model["datasets"]),
+                         [f"{self.FQ}.{t}" for t in ("CUSTOMERS", "PRODUCTS", "REVENUE_MONTHLY")])
+        native = (ROOT / "sql/02_semantic_view.sql").read_text().upper()
+        for m in self.METRICS:
+            self.assertRegex(native, rf"\b{m}\b")
+        for d in model["datasets"]:
+            for f in d["fields"]:
+                with self.subTest(field=f["name"]):
+                    self.assertRegex(native, rf"\b{f['name']}\b")
+        inline = re.search(r"\$\$\n(.*?)\$\$\);", (self.DIR / "setup.sql").read_text(), re.S).group(1)
+        self.assertEqual(yaml.safe_load(inline), model)
+
+    def test_dash_matches_native_except_metric_prefix(self):
+        import re
+        native = (ROOT / "getting-started/revenue_pulse.dash").read_text()
+        ossie = (self.DIR / "revenue_pulse.dash").read_text()
+        pat = re.compile(r"\brevenue\.(" + "|".join(self.METRICS) + r")\b", re.I)
+        self.assertIsNone(pat.search(ossie))
+        self.assertEqual(ossie, pat.sub(lambda m: m.group(1).upper(), native))
+
+    def test_cleanup_matches_native(self):
+        body = lambda p: [l for l in p.read_text().splitlines() if not l.startswith("--")]
+        self.assertEqual(body(self.DIR / "cleanup.sql"), body(ROOT / "getting-started/cleanup.sql"))
+
+    def test_needs_no_database_or_account_privileges(self):
+        for name in ("setup.sql", "cleanup.sql"):
+            sql = (self.DIR / name).read_text()
+            body = "\n".join(l for l in sql.splitlines() if l.strip() and not l.startswith("--")).upper()
+            with self.subTest(name=name):
+                for bad in ("CREATE DATABASE", "CREATE SCHEMA", "DROP DATABASE", "DROP SCHEMA", "REVENUE_PULSE_DB"):
+                    self.assertNotIn(bad, body)
