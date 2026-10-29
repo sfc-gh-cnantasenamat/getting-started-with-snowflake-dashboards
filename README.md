@@ -48,5 +48,3 @@ The [guide](https://github.com/sfc-gh-cnantasenamat/sfguide-build-snowflake-dash
 - [Dashboards in Snowsight and Snowflake CoWork](https://docs.snowflake.com/en/LIMITEDACCESS/cowork-dashboards): Snowflake Dashboards documentation
 - [Chart actions](https://docs.snowflake.com/en/LIMITEDACCESS/cowork-dashboards#chart-actions): how clicking or dragging on a chart filters other tiles
 - [SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML](https://docs.snowflake.com/en/sql-reference/stored-procedures/system_create_semantic_view_from_ossie_yaml): used by the OSSIE variant
-- [Getting Started with Snowflake Dashboards](https://github.com/sfc-gh-cnantasenamat/sfguide-getting-started-with-snowflake-dashboards): Part 1 guide
-- [Build Snowflake Dashboards with CoCo](https://github.com/sfc-gh-cnantasenamat/sfguide-build-snowflake-dashboards-with-coco): Part 2 guide
