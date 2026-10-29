@@ -1,4 +1,4 @@
-# Build Snowflake Dashboards with CoCo
+# Getting Started with Snowflake Dashboards
 
 Companion code for both Snowflake Dashboards developer guides:
 
