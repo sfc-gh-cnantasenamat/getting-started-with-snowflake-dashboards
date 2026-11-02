@@ -36,10 +36,12 @@ Build the same dashboard yourself by prompting Cortex Code, publish it to a sale
 
 **You need:** `ACCOUNTADMIN` (setup creates a database, a Git integration, and a viewer role) and a warehouse.
 
-1. Run the SQL scripts in [`sql/`](sql/) in order, starting with `00_bootstrap.sql`.
+1. Run the SQL scripts in [`sql/`](sql/) from `00_bootstrap.sql` through `04_viewer_role.sql`, in order. Save `99_cleanup.sql` for teardown; it drops everything the others create.
 2. Open this repo as a Git workspace.
 3. Prompt Cortex Code to build your own dashboard, using `dashboards/revenue_pulse.dash` as the reference.
 4. Publish it as an artifact and share it.
+
+`dashboards/revenue_pulse_extended.dash` is the same dashboard spread across five tabs with how-to notes on each, for self-guided demos.
 
 The [guide](https://github.com/sfc-gh-cnantasenamat/sfguide-build-snowflake-dashboards-with-coco) has the prompts, checks, and screenshots for each step.
 
